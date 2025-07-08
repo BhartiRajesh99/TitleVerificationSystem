@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import axios from "axios";
+import axios from "../api/axios.js";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -86,7 +86,11 @@ export default function AuthPage() {
         if (form.avatar) {
           formData.append("avatar", form.avatar);
         }
-        await axios.post(url, formData);
+        await axios.post(url, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         toast.success("Registration successful! Please login.");
         setIsLogin(true);
         setForm({ email: "", password: "", avatar: "" });

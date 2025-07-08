@@ -5,7 +5,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import axios from "axios";
+import axios from "../api/axios.js";
 import toast from "react-hot-toast";
 
 
