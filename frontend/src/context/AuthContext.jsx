@@ -7,6 +7,7 @@ import {
 } from "react";
 import axios from "../api/axios";
 import toast from "react-hot-toast";
+axios.defaults.withCredentials = true
 
 const apiurl = import.meta.env.VITE_API_URL
 
@@ -23,7 +24,9 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${apiurl}/auth/me`);
+      const { data } = await axios.get(`${apiurl}/auth/me`, {
+        withCredentials: true,
+      });
       if (data && data.user) {
         setUser(data.user);
         setIsAuthenticated(true);
@@ -60,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     try {
-      await axios.post(`${apiurl}/auth/logout`);
+      await axios.post(`${apiurl}/auth/logout`, { withCredentials: true });
       toast.success("Logout Successfull")
     } catch (error) {
       console.error("Logout error:", error);

@@ -3,8 +3,9 @@ import { useNavigate } from "react-router";
 import axios from "../api/axios.js";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
+axios.defaults.withCredentials = true
 
-const apiUrl = import.meta.env.VITE_API_URL
+const apiUrl = import.meta.env.VITE_API_URL;
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -63,7 +64,7 @@ export default function AuthPage() {
         const { data } = await axios.post(url, {
           email: form.email,
           password: form.password,
-        });
+        },{withCredentials: true});
         if (data.user) {
           const loginSuccess = await login(data.user);
           if (loginSuccess) {
@@ -89,7 +90,7 @@ export default function AuthPage() {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        });
+        },{withCredentials: true});
         toast.success("Registration successful! Please login.");
         setIsLogin(true);
         setForm({ email: "", password: "", avatar: "" });
