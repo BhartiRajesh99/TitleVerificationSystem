@@ -16,10 +16,14 @@ const __dirname = dirname(__filename);
 // Create Express app
 const app = express();
 
+const url =
+  process.env.NODE_ENV === "development"
+    ? process.env.DEVELOPMENT_FRONTEND_URL
+    : process.env.PRODUCTION_FRONTEND_URL;
 // CORS configuration
 app.use(
   cors({
-    origin: "https://title-verification-system-frontend.vercel.app",
+    origin: url,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [

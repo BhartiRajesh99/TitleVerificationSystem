@@ -6,16 +6,15 @@ import { useAuth } from "../context/AuthContext";
 import logo from "../assets/title.png";
 import logoutLogo from "../assets/logout.png";
 
-
-const apiUrl = import.meta.env.VITE_API_URL
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
   const displayName = user?.email?.split("@")[0] || "User";
 
   return (
-    <nav className="flex items-center w-full justify-between bg-[#16281c] border-b border-[#6b8f71]/40 px-8 py-4 shadow-sm rounded-b-xl">
-      {/* Brand */}
-      <div className="flex gap-6 w-[50%] items-center">
+    <nav className="flex flex-col sm:flex-row items-center w-full justify-between bg-[#16281c] border-b border-[#6b8f71]/40 px-4 md:px-8 py-4 shadow-sm rounded-b-xl gap-4 md:gap-0">
+      {/* Brand & Search */}
+      <div className="flex flex-col sm:flex-row gap-4 md:gap-6 w-full md:w-[50%] items-center">
         <div className="flex items-center gap-2">
           <img
             src={logo}
@@ -26,10 +25,9 @@ function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
             Title<span className="text-[#6b8f71]">IQ</span>
           </span>
         </div>
-
         {/* Wide Search Bar Button */}
         <button
-          className="border border-[#6b8f71] text-[#e3efd3] cursor-pointer px-4 py-2 min-w-[220px] rounded-full font-semibold flex items-center justify-between gap-1 bg-[#223826] hover:bg-[#6b8f71]/20 transition-all duration-150 text-base shadow"
+          className="border border-[#6b8f71] text-[#e3efd3] cursor-pointer px-4 py-2 min-w-[180px] md:min-w-[220px] rounded-full font-semibold flex items-center justify-between gap-1 bg-[#223826] hover:bg-[#6b8f71]/20 transition-all duration-150 text-base shadow"
           onClick={() => setShowSearchModal(true)}
         >
           <span className="text-lg">🔍</span>
@@ -37,21 +35,21 @@ function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
         </button>
       </div>
       {/* User Info & Logout */}
-      <div className="flex w-[50%] justify-end items-center gap-4">
+      <div className="flex w-full md:w-[50%] justify-center sm:justify-end items-center gap-4 md:gap-4">
         <img
           src={user?.avatar || "/default-avatar.jpg"}
           alt="avatar"
-          className="w-12 h-12 rounded-full border border-[#6b8f71] object-cover object-bottom shadow bg-white"
+          className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-[#6b8f71] object-cover object-bottom shadow bg-white"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = "/default-avatar.jpg";
           }}
         />
-        <span className="text-[#e3efd3] flex items-center font-medium text-lg px-5 py-2 text-center rounded-full bg-[#6b8f71]/15">
+        <span className="text-[#e3efd3] flex items-center font-medium text-base md:text-lg px-4 md:px-5 py-2 text-center rounded-full bg-[#6b8f71]/15">
           {displayName}
         </span>
         <button
-          className="border border-[#e3efd3] text-[#e3efd3] px-5 py-2 rounded-full font-medium flex items-center justify-center gap-1 bg-transparent hover:bg-[#e3efd3]/10 transition-all active:scale-95 duration-150 text-sm"
+          className="border border-[#e3efd3] text-[#e3efd3] px-4 md:px-5 py-2 rounded-full font-medium flex items-center justify-center gap-1 bg-transparent hover:bg-[#e3efd3]/10 transition-all active:scale-95 duration-150 text-sm"
           onClick={onLogout}
         >
           <img src={logoutLogo} className="w-5 h-5 invert" />
@@ -238,7 +236,7 @@ export default function VerificationPage() {
     }
   };
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     await logout();
     navigate("/auth");
   };
