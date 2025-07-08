@@ -35,7 +35,7 @@ function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
         </button>
       </div>
       {/* User Info & Logout */}
-      <div className="flex w-full md:w-[50%] justify-center sm:justify-end items-center gap-4 md:gap-4">
+      <div className="flex w-full md:w-[50%] justify-evenly sm:justify-end items-center gap-4 md:gap-4">
         <img
           src={user?.avatar || "/default-avatar.jpg"}
           alt="avatar"
