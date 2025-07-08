@@ -14,7 +14,7 @@ function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
   return (
     <nav className="flex flex-col sm:flex-row items-center w-full justify-between bg-[#16281c] border-b border-[#6b8f71]/40 px-4 md:px-8 py-4 shadow-sm rounded-b-xl gap-4 md:gap-0">
       {/* Brand & Search */}
-      <div className="flex flex-row justify-end gap-4 md:gap-6 w-full md:w-[50%] items-center">
+      <div className="flex flex-row justify-between gap-4 md:gap-6 w-full md:w-[50%] items-center">
         <div className="flex items-center gap-2">
           <img
             src={logo}
