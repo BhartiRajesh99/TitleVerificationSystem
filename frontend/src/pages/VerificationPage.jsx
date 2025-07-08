@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import axios from "../api/axios.js";
+import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/title.png";
