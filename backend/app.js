@@ -19,7 +19,7 @@ const app = express();
 // CORS configuration
 app.use(
   cors({
-    origin: "https://title-verification-system-frontend.vercel.app/",
+    origin: "https://title-verification-system-frontend.vercel.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
