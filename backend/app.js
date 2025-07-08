@@ -16,8 +16,27 @@ const __dirname = dirname(__filename);
 // Create Express app
 const app = express();
 
-// CORS configuration
-app.use(cors());
+// Robust CORS configuration (for debugging, allows all origins)
+app.use(
+  cors({
+    origin: true, // Reflects the request origin
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
+    exposedHeaders: ["Set-Cookie"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
+);
+
+// Handle preflight requests for all routes
+app.options("*", cors());
 
 // Middleware
 app.use(express.json());
