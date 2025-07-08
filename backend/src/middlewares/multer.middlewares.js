@@ -2,9 +2,12 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Ensure temp directory exists
-const tempDir = "./public/temp";
-if (!fs.existsSync(tempDir)) {
+// Determine temp directory based on environment
+const isProduction = process.env.NODE_ENV === "production";
+const tempDir = isProduction ? "/tmp" : "./public/temp";
+
+// Only create the directory if not in production (Vercel's /tmp always exists)
+if (!isProduction && !fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir, { recursive: true });
 }
 
