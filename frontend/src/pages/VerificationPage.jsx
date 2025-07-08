@@ -6,6 +6,8 @@ import { useAuth } from "../context/AuthContext";
 import logo from "../assets/title.png";
 import logoutLogo from "../assets/logout.png";
 
+const apiUrl = import.meta.env.VITE_API_URL
+
 function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
   const displayName = user?.email?.split("@")[0] || "User";
 
@@ -109,7 +111,7 @@ export default function VerificationPage() {
   const fetchAllTitles = async () => {
     setIsLoadingTitles(true);
     try {
-      const { data } = await axios.get("/titles/all");
+      const { data } = await axios.get(`${apiUrl}/titles/all`);
       setResults(data.results);
     } catch (err) {
       const message = err.response?.data?.message || "Error fetching titles";
@@ -133,7 +135,7 @@ export default function VerificationPage() {
     setFeedback("");
     try {
       const { data } = await axios.get(
-        `/titles/search?q=${encodeURIComponent(q)}`
+        `${apiUrl}/titles/search?q=${encodeURIComponent(q)}`
       );
       // Filter out titles with similarity > 50%
       const filteredResults = data.results.filter((r) => r.similarity <= 60);
@@ -190,7 +192,7 @@ export default function VerificationPage() {
     setFeedback("");
     setIsLoading(true);
     try {
-      const { data } = await axios.post("/titles", formData);
+      const { data } = await axios.post(`${apiUrl}/titles`, formData);
       const message = `Success! Verification Probability: ${data.verificationProbability}%`;
       setFeedback({ message, error: false });
       toast.success(message);
@@ -223,7 +225,7 @@ export default function VerificationPage() {
   const handleDelete = async (id) => {
     setFeedback("");
     try {
-      await axios.delete(`/titles/${id}`);
+      await axios.delete(`${apiUrl}/titles/${id}`);
       const message = "Title deleted successfully";
       setFeedback({ message, error: false });
       toast.success(message);

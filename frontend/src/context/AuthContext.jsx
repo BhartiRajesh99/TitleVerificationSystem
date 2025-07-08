@@ -8,6 +8,8 @@ import {
 import axios from "../api/axios";
 import toast from "react-hot-toast";
 
+const apiurl = import.meta.env.VITE_API_URL
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -21,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data } = await axios.get("/auth/me");
+      const { data } = await axios.get(`${apiurl}/auth/me`);
       if (data && data.user) {
         setUser(data.user);
         setIsAuthenticated(true);
@@ -58,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     try {
-      await axios.post("/auth/logout");
+      await axios.post(`${apiurl}/auth/logout`);
       toast.success("Logout Successfull")
     } catch (error) {
       console.error("Logout error:", error);

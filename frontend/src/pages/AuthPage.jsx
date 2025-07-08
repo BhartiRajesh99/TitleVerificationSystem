@@ -4,6 +4,8 @@ import axios from "../api/axios.js";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
 
+const apiUrl = import.meta.env.VITE_API_URL
+
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({ email: "", password: "", avatar: "" });
@@ -55,7 +57,7 @@ export default function AuthPage() {
     }
 
     try {
-      const url = isLogin ? "auth/login" : "auth/register";
+      const url = isLogin ? `${apiUrl}/auth/login` : `${apiUrl}/auth/register`;
 
       if (isLogin) {
         const { data } = await axios.post(url, {
