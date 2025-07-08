@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/title.png";
 import logoutLogo from "../assets/logout.png";
-axios.defaults.withCredentials = true;
+
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -112,7 +112,7 @@ export default function VerificationPage() {
   const fetchAllTitles = async () => {
     setIsLoadingTitles(true);
     try {
-      const { data } = await axios.get(`${apiUrl}/titles/all`, {withCredentials: true});
+      const { data } = await axios.get(`${apiUrl}/titles/all`);
       setResults(data.results);
     } catch (err) {
       const message = err.response?.data?.message || "Error fetching titles";
@@ -136,8 +136,7 @@ export default function VerificationPage() {
     setFeedback("");
     try {
       const { data } = await axios.get(
-        `${apiUrl}/titles/search?q=${encodeURIComponent(q)}`,
-        { withCredentials: true }
+        `${apiUrl}/titles/search?q=${encodeURIComponent(q)}`
       );
       // Filter out titles with similarity > 50%
       const filteredResults = data.results.filter((r) => r.similarity <= 60);
@@ -194,9 +193,7 @@ export default function VerificationPage() {
     setFeedback("");
     setIsLoading(true);
     try {
-      const { data } = await axios.post(`${apiUrl}/titles`, formData, {
-        withCredentials: true,
-      });
+      const { data } = await axios.post(`${apiUrl}/titles`, formData);
       const message = `Success! Verification Probability: ${data.verificationProbability}%`;
       setFeedback({ message, error: false });
       toast.success(message);
@@ -229,7 +226,7 @@ export default function VerificationPage() {
   const handleDelete = async (id) => {
     setFeedback("");
     try {
-      await axios.delete(`${apiUrl}/titles/${id}`, { withCredentials: true });
+      await axios.delete(`${apiUrl}/titles/${id}`);
       const message = "Title deleted successfully";
       setFeedback({ message, error: false });
       toast.success(message);
