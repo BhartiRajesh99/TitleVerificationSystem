@@ -88,4 +88,13 @@ TitleSchema.index({ ownerName: 1, state: 1 });
 TitleSchema.index({ verified: 1, similarity: 1 });
 TitleSchema.index({ verificationProbability: 1, verified: 1 });
 
+// Add a compound text index for full-text search
+TitleSchema.index({
+  titleName: "text",
+  hindiTitle: "text",
+  ownerName: "text",
+  regnNo: "text",
+  normalized: "text",
+});
+
 export default mongoose.model("Title", TitleSchema);

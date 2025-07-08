@@ -116,7 +116,7 @@ export default function AuthPage() {
           <h2 className="text-[#0d2b1d] text-center mb-6 text-2xl font-bold relative after:content-[''] after:absolute after:bottom-[-10px] after:left-1/2 after:-translate-x-1/2 after:w-[50px] after:h-[3px] after:bg-[#345635] after:rounded">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
-          <div className="relative transition-transform duration-300 focus-within:-translate-y-0.5">
+          <div className="relative transition-transform duration-300">
             <input
               name="email"
               type="email"
@@ -128,7 +128,7 @@ export default function AuthPage() {
               className="w-full p-4 border-2 border-[#6b8f71] rounded-lg text-base bg-[#e3efd3] transition-all duration-300 focus:border-[#0d2b1d] focus:shadow-lg focus:outline-none placeholder:text-[#345635]"
             />
           </div>
-          <div className="relative transition-transform duration-300 focus-within:-translate-y-0.5">
+          <div className="relative transition-transform duration-300 ">
             <input
               name="password"
               type="password"
@@ -147,7 +147,7 @@ export default function AuthPage() {
             <div className="relative mb-2">
               <label
                 htmlFor="avatar"
-                className="flex items-center gap-2 px-4 py-3 bg-[#e3efd3] border-2 border-dashed border-[#0d2b1d] rounded-lg cursor-pointer transition-all duration-300 text-[#0d2b1d] font-medium hover:bg-[#aec3b0] hover:-translate-y-0.5 hover:shadow-md"
+                className="flex items-center gap-2 px-4 py-3 bg-[#e3efd3] border-2 border-dashed border-[#0d2b1d] rounded-lg cursor-pointer transition-all duration-300 text-[#0d2b1d] font-medium hover:bg-[#aec3b0] hover:shadow-md active:scale-95 active:bg-[#aec3b0]/90"
               >
                 <span className="text-lg">📁</span>
                 Choose Avatar Image (Optional)
@@ -171,7 +171,7 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-[#0d2b1d] text-[#e3efd3] border-none px-6 py-4 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 uppercase tracking-wide relative overflow-hidden hover:bg-[#345635] hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#345635]"
+            className="bg-[#0d2b1d] text-[#e3efd3] border-none px-6 py-4 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 uppercase tracking-wide relative overflow-hidden hover:bg-[#345635] hover:shadow-xl active:scale-95 active:bg-[#0d2b1d]/90 focus:outline-none focus:ring-2 focus:ring-[#345635]"
           >
             {isLoading ? (
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin block mx-auto"></span>
@@ -190,7 +190,7 @@ export default function AuthPage() {
               : "Already have an account? Sign In"}
           </p>
           {error && (
-            <div className="text-red-500 text-center p-4 bg-[#e3efd3] rounded-lg text-sm animate-shake relative overflow-hidden border border-red-500">
+            <div className="text-red-500 text-center text-sm p-4 bg-[#e3efd3] rounded-md relative overflow-hidden border-1 border-red-500">
               {error}
             </div>
           )}

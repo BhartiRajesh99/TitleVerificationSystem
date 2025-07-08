@@ -72,6 +72,7 @@ const addTitle = async (req, res) => {
     regnNo,
     ownerName,
     state,
+    stateCode,
     publicationCity,
     periodity,
   } = req.body;
@@ -126,6 +127,7 @@ const addTitle = async (req, res) => {
     regnNo,
     ownerName,
     state,
+    stateCode,
     publicationCity,
     periodity,
     verified: isVerified,
@@ -137,9 +139,8 @@ const addTitle = async (req, res) => {
     createdBy: req.user.id,
   });
   await newTitle.save();
+  await updateSimilarityForTitleAndRelated(newTitle._id);
 
-  // After adding, update all titles' similarity and verificationProbability
-  await updateAllTitlesSimilarity();
   return res.json({
     message: "Title added successfully",
     title: {
@@ -151,6 +152,7 @@ const addTitle = async (req, res) => {
       regnNo: newTitle.regnNo,
       ownerName: newTitle.ownerName,
       state: newTitle.state,
+      stateCode: newTitle.stateCode,
       publicationCity: newTitle.publicationCity,
       periodity: newTitle.periodity,
       verified: newTitle.verified,
@@ -252,9 +254,7 @@ const updateTitle = async (req, res) => {
     },
     { new: true }
   );
-
-  // Update similarity for all titles
-  await updateAllTitlesSimilarity();
+  await updateSimilarityForTitleAndRelated(updatedTitle._id);
 
   res.json({
     message: "Title updated successfully",
@@ -295,9 +295,8 @@ const deleteTitle = async (req, res) => {
     }
 
     await Title.findByIdAndDelete(req.params.id);
-
-    // After deletion, update all titles' similarity and verificationProbability
-    await updateAllTitlesSimilarity();
+    const anyTitle = await Title.findOne();
+    if (anyTitle) await updateSimilarityForTitleAndRelated(anyTitle._id);
 
     res.json({ message: "Title deleted and scores updated" });
   } catch (error) {
@@ -407,20 +406,35 @@ const getAllTitles = async (req, res) => {
   }
 };
 
-// Helper function to update similarity for all titles
-const updateAllTitlesSimilarity = async () => {
-  const allTitles = await Title.find();
-  for (let t of allTitles) {
-    let maxOtherSim = 0;
-    for (let other of allTitles) {
-      if (t._id.toString() !== other._id.toString()) {
-        const s = similarityScore(t.normalized, other.normalized);
-        if (s > maxOtherSim) maxOtherSim = s;
-      }
+// Helper: Find and update similarity for a single title and its closest match
+const updateSimilarityForTitleAndRelated = async (titleId) => {
+  const thisTitle = await Title.findById(titleId);
+  if (!thisTitle) return;
+  // Find the most similar other title
+  const others = await Title.find({ _id: { $ne: titleId } });
+  let maxSim = 0;
+  let mostSimilar = null;
+  for (let t of others) {
+    const sim = similarityScore(thisTitle.normalized, t.normalized);
+    if (sim > maxSim) {
+      maxSim = sim;
+      mostSimilar = t;
     }
-    t.similarity = Math.round(maxOtherSim * 100);
-    t.verificationProbability = 100 - Math.round(maxOtherSim * 100);
-    await t.save();
+  }
+  thisTitle.similarity = Math.round(maxSim * 100);
+  thisTitle.verificationProbability = 100 - Math.round(maxSim * 100);
+  await thisTitle.save();
+  // Also update the most similar title (since its closest match may have changed)
+  if (mostSimilar) {
+    let maxOtherSim = 0;
+    for (let t of others) {
+      if (t._id.toString() === mostSimilar._id.toString()) continue;
+      const sim = similarityScore(mostSimilar.normalized, t.normalized);
+      if (sim > maxOtherSim) maxOtherSim = sim;
+    }
+    mostSimilar.similarity = Math.round(maxOtherSim * 100);
+    mostSimilar.verificationProbability = 100 - Math.round(maxOtherSim * 100);
+    await mostSimilar.save();
   }
 };
 

@@ -14,15 +14,6 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      if (error.response.status === 401) {
-        // Instead of redirecting, we'll just reject the promise
-        // The AuthContext will handle the authentication state
-        return Promise.reject(error);
-      }
-    }
     return Promise.reject(error);
   }
 );

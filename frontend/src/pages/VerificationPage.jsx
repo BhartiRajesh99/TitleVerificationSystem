@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import axios from "../api/axios.js";
 import { toast } from "react-hot-toast";
@@ -10,7 +10,7 @@ function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
   return (
     <nav className="flex justify-between items-center bg-[#0d2b1d] text-[#e3efd3] px-8 py-4 shadow-md mb-4">
       <button
-        className="bg-[#e3efd3] text-[#0d2b1d] border-2 border-[#0d2b1d] px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#aec3b0] hover:border-[#345635] mx-2"
+        className="bg-[#e3efd3] text-[#0d2b1d] border-2 border-[#0d2b1d] px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#aec3b0] hover:border-[#345635] mx-2 active:scale-95 active:bg-[#e3efd3]/90"
         onClick={() => setShowSearchModal(true)}
       >
         🔍 Search Titles
@@ -29,7 +29,7 @@ function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
           {displayName}
         </span>
         <button
-          className="bg-[#0d2b1d] text-[#e3efd3] border-2 border-[#0d2b1d] px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#345635] hover:border-[#345635]"
+          className="bg-[#0d2b1d] text-[#e3efd3] border-2 border-[#0d2b1d] px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#345635] hover:border-[#345635] active:scale-95 active:bg-[#0d2b1d]/90"
           onClick={onLogout}
         >
           Logout
@@ -37,6 +37,15 @@ function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
       </div>
     </nav>
   );
+}
+
+function generateSerialAndRegnNo() {
+  // Example: random 8-digit numbers, you can adjust as needed
+  const randomSerial = Math.floor(100000 + Math.random() * 900000).toString();
+  const randomRegn = `${Math.floor(
+    1000 + Math.random() * 9000
+  ).toString()}/${Math.floor(10 + Math.random() * 90)}`;
+  return { registerSerialNo: randomSerial, regnNo: randomRegn };
 }
 
 export default function VerificationPage() {
@@ -48,14 +57,16 @@ export default function VerificationPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
+  const searchInputRef = useRef(null);
 
   // Form state for new title
+  const initialSerials = generateSerialAndRegnNo();
   const [formData, setFormData] = useState({
     titleCode: "",
     titleName: "",
     hindiTitle: "",
-    registerSerialNo: "",
-    regnNo: "",
+    registerSerialNo: initialSerials.registerSerialNo,
+    regnNo: initialSerials.regnNo,
     ownerName: "",
     state: "",
     stateCode: "",
@@ -92,18 +103,27 @@ export default function VerificationPage() {
     fetchAllTitles();
   }, []);
 
+  useEffect(() => {
+    if (showSearchModal && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearchModal]);
+
   const handleSearch = async (q) => {
     setFeedback("");
     try {
       const { data } = await axios.get(
         `/titles/search?q=${encodeURIComponent(q)}`
       );
-      setResults(data.results);
+      // Filter out titles with similarity > 50%
+      const filteredResults = data.results.filter((r) => r.similarity <= 60);
+      setResults(filteredResults);
       setSearchActive(true);
-      if (data.results.length === 0) {
+      if (filteredResults.length === 0) {
         toast.error("No results found");
-      } else
-        toast.success("Titles found")
+      } else {
+        toast.success("Titles found");
+      }
     } catch (err) {
       const message = err.response?.data?.message || "Error";
       setFeedback({ message, error: true });
@@ -115,10 +135,24 @@ export default function VerificationPage() {
     const { name, value } = e.target;
     if (name === "state") {
       const selected = states.find((s) => s.name === value);
+      const stateCode = selected ? selected.code : "";
+      // Generate title code: STATECODELANGUAGE5DIGITNUMBER
+      let titleCode = "";
+      if (stateCode) {
+        const language = "EN";
+        const randomNum = Math.floor(10000 + Math.random() * 90000);
+        titleCode = `${stateCode}${language}${randomNum}`;
+      }
       setFormData((prev) => ({
         ...prev,
         state: value,
-        stateCode: selected ? selected.code : "",
+        stateCode: stateCode,
+        titleCode: titleCode,
+      }));
+    } else if (name === "publicationCity") {
+      setFormData((prev) => ({
+        ...prev,
+        publicationCity: value,
       }));
     } else {
       setFormData((prev) => ({
@@ -141,13 +175,14 @@ export default function VerificationPage() {
       setFeedback({ message, error: false });
       toast.success(message);
 
-      // Reset form
+      // Reset form and generate new serials
+      const newSerials = generateSerialAndRegnNo();
       setFormData({
         titleCode: "",
         titleName: "",
         hindiTitle: "",
-        registerSerialNo: "",
-        regnNo: "",
+        registerSerialNo: newSerials.registerSerialNo,
+        regnNo: newSerials.regnNo,
         ownerName: "",
         state: "",
         stateCode: "",
@@ -225,7 +260,26 @@ export default function VerificationPage() {
     { name: "Andaman and Nicobar Islands", code: "AN" },
   ];
 
-  const periodities = ["Daily", "Weekly", "Monthly"];
+  const periodities = [
+    { code: "DM", name: "Daily Morning" },
+    { code: "DE", name: "Daily Evening" },
+    { code: "BM", name: "Broadsheet Morning" },
+    { code: "BE", name: "Broadsheet Evening" },
+    { code: "W", name: "Weekly" },
+    { code: "WE", name: "Weekly Edition" },
+    { code: "BW", name: "Bi-Weekly" },
+    { code: "THW", name: "Thrice a Week" },
+    { code: "TWW", name: "Three Days a Week" }, // alias of THW (optional support)
+    { code: "F", name: "Fortnightly" },
+    { code: "M", name: "Monthly" },
+    { code: "Q", name: "Quarterly" },
+    { code: "H", name: "Half-Yearly" },
+    { code: "A", name: "Annual" },
+    { code: "DS", name: "Daily Sunday" },
+    { code: "DF", name: "Daily Friday" },
+    { code: "NDO", name: "Non-Daily Other" },
+    { code: "OP", name: "Occasional Publication" },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#0d2b1d] via-[#345635] to-[#6b8f71] animate-gradientShift bg-[length:200%_200%]">
@@ -238,9 +292,9 @@ export default function VerificationPage() {
       />
 
       {/* Main Content */}
-      <main className="max-w-5xl w-full mx-auto flex-1 px-6 mt-10 animate-fadeIn">
+      <main className="max-w-5xl w-full mx-auto flex-1 px-6 mt-10 ">
         {/* Verification Card */}
-        <section className="bg-[#e9ece5]/95 p-10 rounded-2xl shadow-lg mb-16 border border-[#aec3b0] backdrop-blur-md transition-transform hover:-translate-y-1 hover:scale-[1.01] hover:shadow-2xl animate-fadeIn">
+        <section className="bg-[#e9ece5]/95 p-10 rounded-2xl shadow-lg mb-16 border border-[#aec3b0] backdrop-blur-md transition-transform  hover:scale-[1.003] hover:shadow-2xl  ">
           <h2 className="text-[#0d2b1d] mb-10 text-2xl font-bold relative after:content-[''] after:absolute after:bottom-[-0.5em] after:left-0 after:w-1/4 after:h-1 after:bg-[#345635] after:rounded">
             Add New Title for Verification
           </h2>
@@ -258,15 +312,16 @@ export default function VerificationPage() {
               <input
                 type="text"
                 name="titleCode"
-                placeholder="Enter title code"
+                placeholder="Title Code"
                 value={formData.titleCode}
                 onChange={handleInputChange}
-                className="w-full p-3 border-2 border-[#6b8f71] rounded-lg text-base bg-[#e3efd3] text-[#0d2b1d] transition-all focus:border-[#345635] focus:shadow-lg focus:outline-none hover:shadow-md"
+                className="w-full p-3 border-2 border-[#6b8f71] rounded-lg text-base bg-gray-200 cursor-not-allowed opacity-60 focus:border-[#6b8f71] focus:shadow-none focus:outline-none hover:shadow-none"
+                disabled
               />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-[#0d2b1d] font-semibold text-xs uppercase tracking-wide">
-                Title Name *
+                Title Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -301,7 +356,8 @@ export default function VerificationPage() {
                 placeholder="Enter registration serial number"
                 value={formData.registerSerialNo}
                 onChange={handleInputChange}
-                className="w-full p-3 border-2 border-[#6b8f71] rounded-lg text-base bg-[#e3efd3] text-[#0d2b1d] transition-all focus:border-[#345635] focus:shadow-lg focus:outline-none hover:shadow-md"
+                className="w-full p-3 border-2 border-[#6b8f71] rounded-lg text-base bg-gray-200 cursor-not-allowed opacity-60 focus:border-[#6b8f71] focus:shadow-none focus:outline-none hover:shadow-none"
+                disabled
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -314,7 +370,8 @@ export default function VerificationPage() {
                 placeholder="Enter registration number"
                 value={formData.regnNo}
                 onChange={handleInputChange}
-                className="w-full p-3 border-2 border-[#6b8f71] rounded-lg text-base bg-[#e3efd3] text-[#0d2b1d] transition-all focus:border-[#345635] focus:shadow-lg focus:outline-none hover:shadow-md"
+                className="w-full p-3 border-2 border-[#6b8f71] rounded-lg text-base bg-gray-200 cursor-not-allowed opacity-60 focus:border-[#6b8f71] focus:shadow-none focus:outline-none hover:shadow-none"
+                disabled
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -373,15 +430,15 @@ export default function VerificationPage() {
               >
                 <option value="">Select periodicity</option>
                 {periodities.map((period) => (
-                  <option key={period} value={period}>
-                    {period}
+                  <option key={period.code} value={period.code}>
+                    {period.name} - {period.code}
                   </option>
                 ))}
               </select>
             </div>
           </form>
           <button
-            className="bg-[#0d2b1d] text-[#e3efd3] border-2 border-[#0d2b1d] px-10 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#345635] hover:border-[#345635] mt-6 mx-2"
+            className="bg-[#0d2b1d] text-[#e3efd3] border-2 border-[#0d2b1d] px-10 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#345635] hover:border-[#345635] mt-6 mx-2 active:scale-95 active:bg-[#0d2b1d]/90"
             onClick={handleAdd}
             disabled={isLoading}
           >
@@ -400,7 +457,8 @@ export default function VerificationPage() {
         <section className="mt-12">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-6 px-2">
             <h3 className="text-[#e3efd3] text-xl font-semibold mb-0">
-              Your Titles ({results.length})
+              {searchActive ? "All Titles" : "Your Titles"}
+              {`(${results.length})`}
               {isLoadingTitles && (
                 <span className="inline-block w-5 h-5 border-4 border-white/30 border-t-white rounded-full animate-spin ml-2"></span>
               )}
@@ -414,7 +472,7 @@ export default function VerificationPage() {
                   setSearchActive(false);
                 }}
               >
-                Show All Titles
+                Show Your Titles
               </span>
             )}
           </div>
@@ -427,7 +485,7 @@ export default function VerificationPage() {
               {results.map((r, i) => (
                 <div
                   key={r.id}
-                  className="bg-[#e9ece5]/95 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border border-[#aec3b0] shadow-md transition-transform hover:scale-[1.01] hover:shadow-xl animate-fadeIn gap-2"
+                  className="bg-[#e9ece5]/95 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border border-[#aec3b0] shadow-md transition-transform hover:scale-[1.003] hover:shadow-xl gap-2"
                   style={{ animationDelay: `${i * 60 + 200}ms` }}
                 >
                   <div className="flex flex-col gap-2 flex-1">
@@ -478,7 +536,7 @@ export default function VerificationPage() {
                   </div>
                   <div className="flex gap-3 ml-0 md:ml-6 mt-6 md:mt-0">
                     <button
-                      className="bg-[#e3efd3] text-[#0d2b1d] border-2 border-[#0d2b1d] px-6 py-2 rounded-lg font-semibold transition-all hover:bg-[#aec3b0] hover:border-[#345635]"
+                      className="bg-[#e3efd3] text-[#0d2b1d] border-2 border-[#0d2b1d] px-6 py-2 rounded-lg font-semibold transition-all hover:bg-[#aec3b0] hover:border-[#345635] active:scale-95 active:bg-[#e3efd3]/90"
                       onClick={() => handleDelete(r.id)}
                     >
                       Delete
@@ -498,7 +556,7 @@ export default function VerificationPage() {
             className="fixed inset-0 bg-black/70 flex justify-center items-center z-[1000] backdrop-blur-sm p-5"
             onClick={() => setShowSearchModal(false)}
           ></div>
-          <div className="bg-[#e9ece5]/95 p-8 rounded-xl shadow-2xl border border-[#aec3b0] backdrop-blur-md min-w-[400px] max-w-[700px] w-full z-[1001] animate-fadeIn absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-4">
+          <div className="bg-[#e9ece5]/95 p-8 rounded-xl shadow-2xl border border-[#aec3b0] backdrop-blur-md min-w-[400px] max-w-[700px] w-full z-[1001]   absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-4">
             <h2 className="text-[#0d2b1d] mb-6 text-2xl font-bold relative after:content-[''] after:absolute after:bottom-[-0.5em] after:left-0 after:w-1/4 after:h-1 after:bg-[#345635] after:rounded">
               Search Titles
             </h2>
@@ -509,9 +567,10 @@ export default function VerificationPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearchModal()}
               className="w-full p-3 border-2 border-[#6b8f71] rounded-lg text-base bg-[#e3efd3] text-[#0d2b1d] transition-all focus:border-[#345635] focus:shadow-lg focus:outline-none hover:shadow-md"
+              ref={searchInputRef}
             />
             <button
-              className="bg-[#0d2b1d] text-[#e3efd3] text-xl border-2 border-[#0d2b1d] px-6 py-3 rounded-xl font-semibold transition-all hover:bg-[#345635] hover:border-[#345635] mt-2"
+              className="bg-[#0d2b1d] text-[#e3efd3] text-xl border-2 border-[#0d2b1d] px-6 py-3 rounded-xl font-semibold transition-all hover:bg-[#345635] hover:border-[#345635] mt-2 active:scale-95 active:bg-[#0d2b1d]/90"
               onClick={handleSearchModal}
               disabled={isSearchLoading}
             >

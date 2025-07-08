@@ -1,4 +1,4 @@
-import {metaphone} from "metaphone";
+import { metaphone } from "metaphone";
 import { soundex } from "soundex-code";
 import stringSimilarity from "string-similarity";
 import fuzzy from "fuzzy";
