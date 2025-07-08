@@ -15,9 +15,13 @@ connectDB()
         console.log(`Server is running on port ${PORT}`);
       });
     } else {
-      console.log("MongoDB connected succefully")
+      console.log("MongoDB connected succefully");
     }
   })
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err);
   });
+
+export default function handler(req, res) {
+  res.status(200).json({ message: "Hello from Vercel!" });
+}
