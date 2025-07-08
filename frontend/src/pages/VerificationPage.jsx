@@ -3,36 +3,56 @@ import { useNavigate } from "react-router";
 import axios from "../api/axios.js";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/title.png";
+import logoutLogo from "../assets/logout.png";
 
 function NavbarComponent({ onSearch, user, onLogout, setShowSearchModal }) {
   const displayName = user?.email?.split("@")[0] || "User";
 
   return (
-    <nav className="flex justify-between items-center bg-[#0d2b1d] text-[#e3efd3] px-8 py-4 shadow-md mb-4">
-      <button
-        className="bg-[#e3efd3] text-[#0d2b1d] border-2 border-[#0d2b1d] px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#aec3b0] hover:border-[#345635] mx-2 active:scale-95 active:bg-[#e3efd3]/90"
-        onClick={() => setShowSearchModal(true)}
-      >
-        🔍 Search Titles
-      </button>
-      <div className="flex items-center gap-4 mx-2">
+    <nav className="flex items-center w-full justify-between bg-[#16281c] border-b border-[#6b8f71]/40 px-8 py-4 shadow-sm rounded-b-xl">
+      {/* Brand */}
+      <div className="flex gap-6 w-[50%] items-center">
+        <div className="flex items-center gap-2">
+          <img
+            src={logo}
+            alt="TitleIQ Logo"
+            className="w-8 h-8 rounded-lg shadow border border-[#6b8f71] bg-white object-cover"
+          />
+          <span className="text-lg font-extrabold text-[#e3efd3] tracking-wide">
+            Title<span className="text-[#6b8f71]">IQ</span>
+          </span>
+        </div>
+
+        {/* Wide Search Bar Button */}
+        <button
+          className="border border-[#6b8f71] text-[#e3efd3] cursor-pointer px-4 py-2 min-w-[220px] rounded-full font-semibold flex items-center justify-between gap-1 bg-[#223826] hover:bg-[#6b8f71]/20 transition-all duration-150 text-base shadow"
+          onClick={() => setShowSearchModal(true)}
+        >
+          <span className="text-lg">🔍</span>
+          <span className="flex-1 text-start">Search</span>
+        </button>
+      </div>
+      {/* User Info & Logout */}
+      <div className="flex w-[50%] justify-end items-center gap-4">
         <img
           src={user?.avatar || "/default-avatar.jpg"}
           alt="avatar"
-          className="w-10 h-10 rounded-full border-2 border-white object-cover object-center transition-transform hover:scale-110"
+          className="w-12 h-12 rounded-full border border-[#6b8f71] object-cover object-bottom shadow bg-white"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = "/default-avatar.jpg";
           }}
         />
-        <span className="text-white font-semibold text-lg capitalize px-4 py-2 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm hover:bg-white/20 hover:shadow-md transition-all">
+        <span className="text-[#e3efd3] flex items-center font-medium text-lg px-5 py-2 text-center rounded-full bg-[#6b8f71]/15">
           {displayName}
         </span>
         <button
-          className="bg-[#0d2b1d] text-[#e3efd3] border-2 border-[#0d2b1d] px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all hover:bg-[#345635] hover:border-[#345635] active:scale-95 active:bg-[#0d2b1d]/90"
+          className="border border-[#e3efd3] text-[#e3efd3] px-5 py-2 rounded-full font-medium flex items-center justify-center gap-1 bg-transparent hover:bg-[#e3efd3]/10 transition-all active:scale-95 duration-150 text-sm"
           onClick={onLogout}
         >
-          Logout
+          <img src={logoutLogo} className="w-5 h-5 invert" />
+          <span>Logout</span>
         </button>
       </div>
     </nav>
@@ -215,8 +235,8 @@ export default function VerificationPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async() => {
+    await logout();
     navigate("/auth");
   };
 
