@@ -8,6 +8,15 @@ dotenv.config({
 
 const PORT = process.env.PORT || 3000;
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to PMSSS API",
+    status: "Server is running",
+    environment: process.env.NODE_ENV || "development",
+  });
+});
+
+
 connectDB()
   .then(() => {
     if (process.env.NODE_ENV === "development") {
