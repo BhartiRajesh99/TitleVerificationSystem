@@ -23,7 +23,7 @@ const url =
 // CORS configuration
 app.use(
   cors({
-    origin: url,
+    origin: url.toString(),
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
