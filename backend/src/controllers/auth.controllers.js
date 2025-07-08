@@ -46,7 +46,7 @@ const registerUser = async (req, res) => {
       try {
         const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
         if (cloudinaryResponse) {
-          avatarUrl = cloudinaryResponse.url;
+          avatarUrl = cloudinaryResponse.secure_url;
         }
       } catch (uploadError) {
         console.error("Avatar upload error:", uploadError);
