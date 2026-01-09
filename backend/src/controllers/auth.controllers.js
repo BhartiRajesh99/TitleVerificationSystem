@@ -111,14 +111,10 @@ const loginUser = async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    console.log("Token: ",token)
+
     // Set cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-      path: "/",
-    });
+    res.cookie("token", token);
 
     // Send response
     res.status(200).json({
@@ -139,12 +135,7 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
-    path: "/",
-  });
+  res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
 };
 

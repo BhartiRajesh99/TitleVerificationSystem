@@ -555,14 +555,16 @@ export default function VerificationPage() {
                       Verification: {r.verificationProbability}%
                     </div> */}
                   </div>
-                  <div className="flex gap-3 ml-0 md:ml-6 mt-6 md:mt-0">
-                    <button
-                      className="bg-[#e3efd3] text-[#0d2b1d] border-2 border-[#0d2b1d] px-6 py-2 rounded-lg font-semibold transition-all hover:bg-[#aec3b0] hover:border-[#345635] active:scale-95 active:bg-[#e3efd3]/90"
-                      onClick={() => handleDelete(r.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {!searchActive && (
+                    <div className="flex gap-3 ml-0 md:ml-6 mt-6 md:mt-0">
+                      <button
+                        className="bg-[#e3efd3] text-[#0d2b1d] border-2 border-[#0d2b1d] px-6 py-2 rounded-lg font-semibold transition-all hover:bg-[#aec3b0] hover:border-[#345635] active:scale-95 active:bg-[#e3efd3]/90"
+                        onClick={() => handleDelete(r.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
