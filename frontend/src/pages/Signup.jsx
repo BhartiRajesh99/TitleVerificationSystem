@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -22,11 +23,15 @@ const Signup = () => {
     setLoading(true);
     setError("");
 
+    const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
     try {
       await axios.post(`${apiurl}/auth/register`, form);
+      toast.success("Registration successful! Please log in.");
       navigate("/login");
     } catch (err) {
-      setError("Registration failed. Try again.");
+      setError(err.response.data.message || "Registration failed. Please try again.");
+      toast.error("Registration failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -44,7 +49,7 @@ const Signup = () => {
         </p>
 
         {error && (
-          <div className="mb-4 text-sm text-rose-600 bg-rose-50 p-3 rounded-xl">
+          <div className="mb-4 text-center text-sm text-rose-600 bg-rose-50 p-3 rounded-xl">
             {error}
           </div>
         )}
