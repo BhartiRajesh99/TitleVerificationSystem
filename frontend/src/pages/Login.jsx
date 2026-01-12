@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const { login } = useAuth();
@@ -10,6 +10,7 @@ const Login = () => {
   const [form, setForm] = useState({
     email: "",
     password: "",
+    role: "user"
   });
 
   const [loading, setLoading] = useState(false);
@@ -23,16 +24,21 @@ const Login = () => {
     setLoading(true);
     setError("");
 
-    const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
     try {
-      const { data } = await axios.post(`${apiurl}/auth/login`, form);
-
-      const success = await login(data.user);
-      if (success) {
-        navigate("/");
+      const user = await login(form);
+      
+      toast.success("Login successful");
+      if (user?.role === "admin") {
+        navigate("/admin");   
+      } else {
+        navigate("/");                 
       }
     } catch (err) {
       setError("Invalid email or password");
+      console.log(err);
+      toast.error(
+        err.message || "An error occurred during login"
+      );
     } finally {
       setLoading(false);
     }
@@ -40,22 +46,22 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-slate-100 px-4">
-      <div className="w-full max-w-md backdrop-blur-xl bg-white/70 border border-slate-200 rounded-3xl shadow-xl p-8">
+      <div className="w-full max-w-sm backdrop-blur-xl bg-white/70 border border-slate-200 rounded-3xl shadow-xl px-7 py-6">
 
-        <h1 className="text-3xl font-extrabold text-center mb-2">
+        <h1 className="text-2xl font-extrabold text-center mb-1">
           Welcome Back
         </h1>
-        <p className="text-center text-slate-600 mb-8">
-          Sign in to access the AI Title Verification System
+        <p className="text-center text-sm text-slate-600 mb-5">
+          AI Title Verification System
         </p>
 
         {error && (
-          <div className="mb-4 text-center text-sm text-rose-600 bg-rose-50 p-3 rounded-xl">
+          <div className="mb-3 text-center text-xs text-rose-600 bg-rose-50 px-3 py-2 rounded-xl">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Email Address"
             name="email"
@@ -70,16 +76,31 @@ const Login = () => {
             onChange={handleChange}
           />
 
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">
+              Role
+            </label>
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="w-full text-sm px-3 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition"
+            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition"
           >
             {loading ? "Signing in..." : "Login"}
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-center text-slate-600">
+        <p className="mt-4 text-xs text-center text-slate-600">
           Don’t have an account?{" "}
           <Link to="/signup" className="text-indigo-600 font-semibold">
             Create one
@@ -87,12 +108,13 @@ const Login = () => {
         </p>
       </div>
     </div>
+
   );
 };
 
 const Input = ({ label, name, type, onChange }) => (
   <div>
-    <label className="block text-sm font-medium text-slate-700 mb-1">
+    <label className="block text-xs font-medium text-slate-700 mb-1">
       {label}
     </label>
     <input
@@ -100,7 +122,7 @@ const Input = ({ label, name, type, onChange }) => (
       type={type}
       required
       onChange={onChange}
-      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"
+      className="w-full text-sm px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"
     />
   </div>
 );
