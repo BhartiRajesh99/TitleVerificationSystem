@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 export default function (req, res, next) {
-  const token = req.cookies.token || '';
+  const token = req.cookies?.token || '';
   if (!token) {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
@@ -11,7 +11,7 @@ export default function (req, res, next) {
       token,
       process.env.JWT_SECRET || "your-secret-key"
     );
-    req.user = { id: decoded.userId };
+    req.user = { id: decoded.userId, role: decoded.role };
     next();
   } catch (err) {
     console.error("Token verification error:", err);
