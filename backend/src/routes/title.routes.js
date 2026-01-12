@@ -5,26 +5,28 @@ const router = express.Router();
 
 //import routes
 import {
-  searchTitle,
+  getTitleByFilter,
   addTitle,
   updateTitle,
   deleteTitle,
   getAllTitles,
 } from "../controllers/title.controllers.js";
 
+router.use(auth);
+
 // Search Titles
-router.route("/search").get(auth, searchTitle);
+router.route("/search").get(getTitleByFilter);
 
 // Add Title (with all checks)
-router.route("/").post(auth, addTitle);
+router.route("/").post(addTitle);
 
 // Update Title
-router.route("/:id").put(auth, updateTitle);
+router.route("/:id").put(updateTitle);
 
 // Delete Title
-router.route("/:id").delete(auth, deleteTitle);
+router.route("/:id").delete(deleteTitle);
 
 //get all titles
-router.route("/all").get(auth, getAllTitles);
+router.route("/all").get(getAllTitles);
 
 export default router;
