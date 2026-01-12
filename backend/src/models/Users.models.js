@@ -14,18 +14,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
     },
-    avatar: {
+    name: {
       type: String,
       default: null,
+    },
+    role: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
     },
   },
   {
     timestamps: true,
   }
 );
-
-// Drop the old username index if it exists
-userSchema.index({ username: 1 }, { unique: true, sparse: true });
 
 const User = mongoose.model("User", userSchema);
 
