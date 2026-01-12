@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Title from "../models/Title.models.js";
 import {
   normalizeTitle,
@@ -9,159 +10,80 @@ import {
   similarityScore,
 } from "../utils/similarity.js";
 
-const searchTitle = async (req, res) => {
-  const { q, state, verified, ownerName } = req.query;
-
-  let query = {};
-
-  if (q) {
-    const normalized = normalizeTitle(q);
-    const { soundex, metaphone } = getPhoneticCodes(q);
-
-    query.$or = [
-      { titleName: { $regex: q, $options: "i" } },
-      { hindiTitle: { $regex: q, $options: "i" } },
-      { ownerName: { $regex: q, $options: "i" } },
-      { regnNo: { $regex: q, $options: "i" } },
-      { normalized: { $regex: normalized, $options: "i" } },
-      { soundex },
-      { metaphone },
-    ];
-  }
-
-  if (state) query.state = { $regex: state, $options: "i" };
-  if (verified !== undefined) query.verified = verified === "true";
-  if (ownerName) query.ownerName = { $regex: ownerName, $options: "i" };
-
-  try {
-    const titles = await Title.find(query).limit(20);
-
-    // Calculate similarity if search query provided
-    const results = titles.map((t) => ({
-      id: t._id,
-      titleCode: t.titleCode,
-      titleName: t.titleName,
-      hindiTitle: t.hindiTitle,
-      registerSerialNo: t.registerSerialNo,
-      regnNo: t.regnNo,
-      ownerName: t.ownerName,
-      state: t.state,
-      publicationCity: t.publicationCity,
-      periodity: t.periodity,
-      verified: t.verified,
-      similarity: t.similarity,
-      verificationProbability: t.verificationProbability,
-      createdAt: t.createdAt,
-      updatedAt: t.updatedAt,
-    }));
-
-    res.json({ results });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error searching titles", error: error.message });
-  }
-};
-
 const addTitle = async (req, res) => {
   const {
     titleCode,
     titleName,
     hindiTitle,
-    registerSerialNo,
-    regnNo,
+    publicationName,
+    periodity,
     ownerName,
     state,
-    stateCode,
-    publicationCity,
-    periodity,
   } = req.body;
 
-  if (!titleName) {
-    return res.status(400).json({ message: "Title name is required" });
-  }
-  const normalized = normalizeTitle(titleName);
-
-  // Disallowed checks
-  if (hasDisallowedPrefix(titleName))
-    return res.status(400).json({ message: "Disallowed prefix" });
-  if (hasDisallowedSuffix(titleName))
-    return res.status(400).json({ message: "Disallowed suffix" });
-  if (containsDisallowedWord(titleName))
-    return res.status(400).json({ message: "Contains disallowed word" });
-  if (containsPeriodicity(titleName))
-    return res.status(400).json({ message: "Contains disallowed periodicity" });
-
-  const { soundex, metaphone } = getPhoneticCodes(titleName);
-
-  // Get ALL existing titles to calculate similarity
-  const allExistingTitles = await Title.find();
-
-  let maxSim = 0;
-  let mostSimilarTitle = null;
-
-  // Check similarity against ALL existing titles
-  for (let t of allExistingTitles) {
-    const sim = similarityScore(normalized, t.normalized);
-    if (sim > maxSim) {
-      maxSim = sim;
-      mostSimilarTitle = t;
+    // Basic validation
+    if (!titleName?.trim()) {
+      return res.status(400).json({ message: "Title name is required" });
     }
-    // Reject if too similar (above 50% threshold)
-    if (sim > 0.5) {
-      return res.status(400).json({
-        message: `Title too similar to existing: ${t.titleName}`,
-        similarity: Math.round(sim * 100),
-        verificationProbability: 100 - Math.round(sim * 100),
-        mostSimilarTo: t.titleName,
-      });
-    }
-  }
-  // Save new title with similarity and verificationProbability
-  const isVerified = maxSim < 0.5;
-  const newTitle = new Title({
+
+    // Business rule validation
+    if (hasDisallowedPrefix(titleName))
+      return res.status(400).json({ message: "Disallowed prefix" });
+
+    if (hasDisallowedSuffix(titleName))
+      return res.status(400).json({ message: "Disallowed suffix" });
+
+    if (containsDisallowedWord(titleName))
+      return res.status(400).json({ message: "Contains disallowed word" });
+
+    if (containsPeriodicity(titleName))
+      return res.status(400).json({ message: "Contains disallowed periodicity" });
+
+    // Preprocessing
+    const normalized = normalizeTitle(titleName);
+    const { soundex, metaphone } = getPhoneticCodes(titleName);
+
+  // Save minimal title (NO similarity here)
+  const newTitle = await Title.create({
     titleCode,
     titleName,
     hindiTitle,
-    registerSerialNo,
-    regnNo,
     ownerName,
     state,
-    stateCode,
-    publicationCity,
     periodity,
-    verified: isVerified,
+    publicationName,
     normalized,
     soundex,
     metaphone,
-    similarity: Math.round(maxSim * 100),
-    verificationProbability: 100 - Math.round(maxSim * 100),
     createdBy: req.user.id,
-  });
-  await newTitle.save();
-  await updateSimilarityForTitleAndRelated(newTitle._id);
 
-  return res.json({
-    message: "Title added successfully",
+    // temporary values
+    verified: false,
+    similarity: 0,
+    verificationProbability: 0,
+  });
+
+  const updatedTitle = await updateSimilarityForTitleAndRelated(newTitle._id);
+
+  console.log(updatedTitle)
+
+  return res.status(200).json({
     title: {
-      id: newTitle._id,
-      titleCode: newTitle.titleCode,
-      titleName: newTitle.titleName,
-      hindiTitle: newTitle.hindiTitle,
-      registerSerialNo: newTitle.registerSerialNo,
-      regnNo: newTitle.regnNo,
-      ownerName: newTitle.ownerName,
-      state: newTitle.state,
-      stateCode: newTitle.stateCode,
-      publicationCity: newTitle.publicationCity,
-      periodity: newTitle.periodity,
-      verified: newTitle.verified,
-      similarity: newTitle.similarity,
-      verificationProbability: newTitle.verificationProbability,
+      id: updatedTitle._id,
+      titleCode: updatedTitle.titleCode,
+       message: updatedTitle.verified         //TODO: use AI generated message
+        ? "Title verified successfully"
+        : "Title rejected due to similarity",
+      titleName: updatedTitle.titleName,
+      hindiTitle: updatedTitle.hindiTitle,
+      ownerName: updatedTitle.ownerName,
+      state: updatedTitle.state,
+      publicationName: updatedTitle.publicationName,
+      periodity: updatedTitle.periodity,
+      verified: updatedTitle.verified,
+      similarity: updatedTitle.similarity,
+      verificationProbability: updatedTitle.verificationProbability,
     },
-    similarity: Math.round(maxSim * 100),
-    verificationProbability: 100 - Math.round(maxSim * 100),
-    mostSimilarTo: mostSimilarTitle ? mostSimilarTitle.titleName : "None",
   });
 };
 
@@ -170,11 +92,8 @@ const updateTitle = async (req, res) => {
     titleCode,
     titleName,
     hindiTitle,
-    registerSerialNo,
-    regnNo,
     ownerName,
     state,
-    publicationCity,
     periodity,
     verified,
   } = req.body;
@@ -306,39 +225,66 @@ const deleteTitle = async (req, res) => {
   }
 };
 
-const getTitleById = async (req, res) => {
+const getTitleByFilter = async (req, res) => {
   try {
-    const title = await Title.findById(req.params.id);
-    if (!title) {
-      return res.status(404).json({ message: "Title not found" });
+    let { titleCode, state, status } = req.query;
+
+    titleCode = titleCode?.trim() || "";
+    state = state?.trim() || "";
+    status = status?.trim().toUpperCase() || "";
+
+    if (state === "All States") state = "";
+    if (status === "All Status") status = "";
+
+    const matchStage = {
+      createdBy: new mongoose.Types.ObjectId(req.user.id)
+    };
+
+    if (titleCode) {
+      matchStage.titleCode = titleCode
     }
+
+    // state filter
+    if (state) {
+      matchStage.state = state;
+    }
+
+    // status filter
+    if (status === "ACCEPTED") {
+      matchStage.verified = true;
+    } else if (status === "REJECTED") {
+      matchStage.verified = false;
+    }
+    console.log("Aggregation Pipeline: ", matchStage);
+
+    const pipeline = [
+      {$match: matchStage},
+      { $sort: { createdAt: -1 } },
+    ];
+
+    const titles = await Title.aggregate(pipeline);
+
+    if (!titles || titles.length === 0) {
+      return res.status(200).json({ results: [], message: "Title not found" });
+    }
+
+    console.log("Fetched Titles: ", titles);
 
     // Check if user owns this title
-    if (title.createdBy.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to view this title" });
+    for (const title of titles) {
+      if (title.createdBy.toString() !== req.user.id) {
+        return res
+          .status(400)
+          .json({ message: "Not authorized to view this title" });
+      }
     }
 
-    res.json({
-      title: {
-        id: title._id,
-        titleCode: title.titleCode,
-        titleName: title.titleName,
-        hindiTitle: title.hindiTitle,
-        registerSerialNo: title.registerSerialNo,
-        regnNo: title.regnNo,
-        ownerName: title.ownerName,
-        state: title.state,
-        publicationCity: title.publicationCity,
-        periodity: title.periodity,
-        verified: title.verified,
-        similarity: title.similarity,
-        verificationProbability: title.verificationProbability,
-        createdAt: title.createdAt,
-        updatedAt: title.updatedAt,
-      },
+    const results = titles.map((t) => ({...t, id: t._id}));
+
+    res.status(200).json({
+      results: results,
     });
+
   } catch (error) {
     res
       .status(500)
@@ -346,6 +292,7 @@ const getTitleById = async (req, res) => {
   }
 };
 
+//TODO: Pagination in frontend
 const getAllTitles = async (req, res) => {
   try {
     const {
@@ -353,14 +300,9 @@ const getAllTitles = async (req, res) => {
       limit = 10,
       sortBy = "createdAt",
       sortOrder = "desc",
-      verified,
-      state,
     } = req.query;
 
     let query = { createdBy: req.user.id };
-
-    if (verified !== undefined) query.verified = verified === "true";
-    if (state) query.state = { $regex: state, $options: "i" };
 
     const skip = (page - 1) * limit;
     const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
@@ -377,11 +319,8 @@ const getAllTitles = async (req, res) => {
       titleCode: t.titleCode,
       titleName: t.titleName,
       hindiTitle: t.hindiTitle,
-      registerSerialNo: t.registerSerialNo,
-      regnNo: t.regnNo,
       ownerName: t.ownerName,
       state: t.state,
-      publicationCity: t.publicationCity,
       periodity: t.periodity,
       verified: t.verified,
       similarity: t.similarity,
@@ -390,7 +329,7 @@ const getAllTitles = async (req, res) => {
       updatedAt: t.updatedAt,
     }));
 
-    res.json({
+    res.status(200).json({
       results,
       pagination: {
         currentPage: parseInt(page),
@@ -408,41 +347,51 @@ const getAllTitles = async (req, res) => {
 
 // Helper: Find and update similarity for a single title and its closest match
 const updateSimilarityForTitleAndRelated = async (titleId) => {
-  const thisTitle = await Title.findById(titleId);
-  if (!thisTitle) return;
-  // Find the most similar other title
+  const newTitle = await Title.findById(titleId);
+  if (!newTitle) return null;
+
   const others = await Title.find({ _id: { $ne: titleId } });
+
   let maxSim = 0;
-  let mostSimilar = null;
-  for (let t of others) {
-    const sim = similarityScore(thisTitle.normalized, t.normalized);
-    if (sim > maxSim) {
-      maxSim = sim;
-      mostSimilar = t;
+  const bulkUpdates = [];
+
+  for (const other of others) {
+    const sim = Math.round(
+      similarityScore(newTitle.normalized, other.normalized) * 100
+    );
+
+    if (sim > maxSim) maxSim = sim;
+
+    if (sim > (other.similarity || 0)) {
+      bulkUpdates.push({
+        updateOne: {
+          filter: { _id: other._id },
+          update: {
+            similarity: sim,
+            verificationProbability: 100 - sim,
+          },
+        },
+      });
     }
   }
-  thisTitle.similarity = Math.round(maxSim * 100);
-  thisTitle.verificationProbability = 100 - Math.round(maxSim * 100);
-  await thisTitle.save();
-  // Also update the most similar title (since its closest match may have changed)
-  if (mostSimilar) {
-    let maxOtherSim = 0;
-    for (let t of others) {
-      if (t._id.toString() === mostSimilar._id.toString()) continue;
-      const sim = similarityScore(mostSimilar.normalized, t.normalized);
-      if (sim > maxOtherSim) maxOtherSim = sim;
-    }
-    mostSimilar.similarity = Math.round(maxOtherSim * 100);
-    mostSimilar.verificationProbability = 100 - Math.round(maxOtherSim * 100);
-    await mostSimilar.save();
+
+  newTitle.similarity = maxSim;
+  newTitle.verificationProbability = 100 - maxSim;
+  newTitle.verified = maxSim <= 40;
+
+  await newTitle.save();
+
+  if (bulkUpdates.length) {
+    await Title.bulkWrite(bulkUpdates);
   }
+
+  return newTitle; // IMPORTANT
 };
 
 export {
-  searchTitle,
   addTitle,
   updateTitle,
   deleteTitle,
   getAllTitles,
-  getTitleById,
+  getTitleByFilter,
 };
