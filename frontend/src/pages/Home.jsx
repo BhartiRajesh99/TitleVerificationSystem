@@ -9,7 +9,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 py-8 text-center">
         <span className="inline-block mb-4 px-4 py-1 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700">
-          GenAI-Powered • Scalable • Policy-Driven
+          GenAI-Powered • Policy-Driven
         </span>
 
         <h1 className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight">
@@ -29,7 +29,7 @@ const Home = () => {
         {/* Highlights */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           <div className="bg-white rounded-xl shadow p-5">
-            <h3 className="text-xl font-bold text-indigo-600">160K+ Titles</h3>
+            <h3 className="text-xl font-bold text-indigo-600">15K+ Titles</h3>
             <p className="text-sm text-slate-600 mt-2">
               Efficiently searched using vector embeddings and optimized indexing.
             </p>
@@ -51,18 +51,51 @@ const Home = () => {
         </div>
 
         {/* CTA */}
-        <div className="mt-12 flex flex-col items-center justify-center gap-4">
+      
+        <div className="mt-12 flex flex-col items-center justify-center">
           <button
             onClick={() => navigate("/verify")}
-            className="px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-lg font-semibold shadow-lg transition"
+            className="
+              relative group overflow-hidden
+              px-12 py-4 rounded-2xl
+              text-lg font-semibold text-white
+              bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600
+              shadow-[0_20px_40px_rgba(79,70,229,0.35)]
+              transition-all duration-300 ease-out
+              hover:scale-[1.03] hover:shadow-[0_30px_60px_rgba(79,70,229,0.45)]
+              active:scale-[0.97]
+            "
           >
-            🚀 Start Verifying
-          </button>
+            {/* Glow layer */}
+            <span
+              className="
+                absolute inset-0
+                bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500
+                opacity-0 group-hover:opacity-20
+                blur-2xl transition-opacity duration-300
+              "
+            />
 
-          <p className="text-sm text-slate-500">
-            No login required • Real-time verification
-          </p>
+            {/* Shine animation */}
+            <span
+              className="
+                absolute inset-0
+                -translate-x-full group-hover:translate-x-full
+                bg-gradient-to-r from-transparent via-white/30 to-transparent
+                transition-transform duration-700
+              "
+            />
+
+            {/* Text */}
+            <span className="relative z-10 flex items-center gap-2">
+              Start Verifying
+              <span className="transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </span>
+          </button>
         </div>
+
       </section>
 
       {/* Features Section */}
