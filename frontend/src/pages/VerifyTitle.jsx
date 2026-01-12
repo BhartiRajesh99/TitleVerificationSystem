@@ -175,7 +175,7 @@ const VerifyTitle = () => {
               onClick={startVerification}
               disabled={loading}
               className="
-                relative group overflow-hidden
+                relative group overflow-hidden cursor-pointer
                 px-12 py-4 rounded-2xl
                 text-lg font-semibold text-white
                 bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600
