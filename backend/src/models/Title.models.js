@@ -15,14 +15,6 @@ const TitleSchema = new mongoose.Schema(
       type: String,
       index: true,
     },
-    registerSerialNo: {
-      type: String,
-      index: true,
-    },
-    regnNo: {
-      type: String,
-      index: true,
-    },
     ownerName: {
       type: String,
       index: true,
@@ -31,11 +23,11 @@ const TitleSchema = new mongoose.Schema(
       type: String,
       index: true,
     },
-    publicationCity: {
+    periodity: {
       type: String,
       index: true,
     },
-    periodity: {
+    publicationName: {
       type: String,
       index: true,
     },
@@ -83,7 +75,6 @@ const TitleSchema = new mongoose.Schema(
 
 // Compound indexes for better query performance
 TitleSchema.index({ titleName: 1, state: 1 });
-TitleSchema.index({ regnNo: 1, state: 1 });
 TitleSchema.index({ ownerName: 1, state: 1 });
 TitleSchema.index({ verified: 1, similarity: 1 });
 TitleSchema.index({ verificationProbability: 1, verified: 1 });
@@ -93,7 +84,7 @@ TitleSchema.index({
   titleName: "text",
   hindiTitle: "text",
   ownerName: "text",
-  regnNo: "text",
+  titleCode: "text",
   normalized: "text",
 });
 

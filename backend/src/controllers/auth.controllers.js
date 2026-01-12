@@ -1,22 +1,20 @@
 import bcrypt from "bcrypt";
 import User from "../models/Users.models.js";
 import jwt from "jsonwebtoken";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const registerUser = async (req, res) => {
   try {
     console.log("Registration request body:", req.body);
-    console.log("Registration request file:", req.file);
 
-    const { email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Validate input
-    if (!email || !password) {
+    if (!email || !password || !name || !role) {
       return res.status(400).json({
-        message: "Email and password are required",
+        message: "Email, password, name, and role are required",
       });
     }
-
+    
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -40,25 +38,13 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Handle avatar upload
-    let avatarUrl = null;
-    if (req.file) {
-      try {
-        const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
-        if (cloudinaryResponse) {
-          avatarUrl = cloudinaryResponse.secure_url;
-        }
-      } catch (uploadError) {
-        console.error("Avatar upload error:", uploadError);
-      }
-    }
-
     // Create new user
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       email,
       password: hashedPassword,
-      avatar: avatarUrl,
+      name: name,
+      role: role,
     });
 
     // Save user
@@ -79,20 +65,20 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     // Validate input
-    if (!email || !password) {
+    if (!email || !password || !role) {
       return res.status(400).json({
-        message: "Email and password are required",
+        message: "Email, password, and role are required",
       });
     }
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email, role });
     if (!user) {
       return res.status(401).json({
-        message: "Invalid email or password",
+        message: "Invalid email or password or role",
       });
     }
 
@@ -106,7 +92,10 @@ const loginUser = async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { userId: user._id },
+      { 
+        userId: user._id,
+        role: user.role
+      },
       process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "1d" }
     );
@@ -114,7 +103,13 @@ const loginUser = async (req, res) => {
     console.log("Token: ",token)
 
     // Set cookie
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
     // Send response
     res.status(200).json({
@@ -122,7 +117,8 @@ const loginUser = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        avatar: user.avatar,
+        name: user.name,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -154,24 +150,17 @@ const getCurrentUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-    res.json({ user });
+    return res.json({ user });
   } catch (err) {
     console.error("Get current user error:", err);
-    res.status(401).json({ message: "Not authenticated" });
+    return res.status(401).json({ message: "Not authenticated" });
   }
 };
 
-const introductionPage = (req, res) => {
-  res.status(200).json({
-    message:
-      "Welcome to the Title Verification System! This is the introduction page.",
-  });
-};
 
 export {
   registerUser,
   loginUser,
   logoutUser,
   getCurrentUser,
-  introductionPage,
 };
