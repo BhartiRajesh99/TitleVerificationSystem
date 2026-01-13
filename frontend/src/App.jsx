@@ -11,7 +11,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import PublicRoute from "./routes/PublicRoute";
-import NotFound from "./pages/NotFound";
+import NotFound from "./components/NotFound";
 
 function App() {
   return (
