@@ -19,7 +19,7 @@ const Home = () => {
           </span>
         </h1>
 
-        <p className="mt-6 text-lg md:text-xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
+        <p className="mt-6 text-md text-slate-600 max-w-4xl mx-auto leading-relaxed">
           A smart, automated platform that verifies new title submissions by combining
           linguistic rules, similarity algorithms, and <strong>Generative AI</strong>.
           Designed to prevent duplication, ensure semantic uniqueness, and comply
