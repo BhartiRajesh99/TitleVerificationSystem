@@ -1,194 +1,158 @@
 import axios from "axios";
-import { useRef } from "react";
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { TrashIcon } from "@heroicons/react/24/outline";
 
 const History = () => {
-  const [loading, setLoading] = useState(false);
+  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  // Filter States
   const [searchCode, setSearchCode] = useState("");
   const [selectedState, setSelectedState] = useState("All States");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
+
   const [titles, setTitles] = useState([]);
-  const [totalTitlesCount, setTotalTitlesCount] = useState([]);
+  const [allTitles, setAllTitles] = useState([]);
 
-  const acceptedCount = totalTitlesCount.filter(s => s.verified).length;
-  const rejectedCount = totalTitlesCount.length - acceptedCount;
+  // Loading States
+  const [loadingKpi, setLoadingKpi] = useState(true);
+  const [loadingTable, setLoadingTable] = useState(true);
 
-  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const acceptedCount = allTitles.filter(t => t.verified).length;
+  const rejectedCount = allTitles.length - acceptedCount;
 
+  // List of Indian states and union territories
   const states = [
-    "Andhra Pradesh",
-    "Arunachal Pradesh",
-    "Assam",
-    "Bihar",
-    "Chhattisgarh",
-    "Goa",
-    "Gujarat",
-    "Haryana",
-    "Himachal Pradesh",
-    "Jharkhand",
-    "Karnataka",
-    "Kerala",
-    "Madhya Pradesh",
-    "Maharashtra",
-    "Manipur",
-    "Meghalaya",
-    "Mizoram",
-    "Nagaland",
-    "Odisha",
-    "Punjab",
-    "Rajasthan",
-    "Sikkim",
-    "Tamil Nadu",
-    "Telangana",
-    "Tripura",
-    "Uttar Pradesh",
-    "Uttarakhand",
-    "West Bengal",
-    "Delhi",
-    "Jammu and Kashmir",
-    "Ladakh",
-    "Chandigarh",
-    "Dadra and Nagar Haveli",
-    "Daman and Diu",
-    "Lakshadweep",
-    "Puducherry",
-    "Andaman and Nicobar Islands",
+    "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa",
+    "Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala",
+    "Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland",
+    "Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
+    "Uttar Pradesh","Uttarakhand","West Bengal","Delhi","Jammu and Kashmir",
+    "Ladakh","Chandigarh","Dadra and Nagar Haveli","Daman and Diu",
+    "Lakshadweep","Puducherry","Andaman and Nicobar Islands"
   ];
 
-  const getAllUserTitles = async () => {
-    setLoading(true)
-    try {
-      const response = await axios.get(`${apiurl}/titles/all`, { withCredentials: true });
-      console.log(response)
-      setTitles(response.data.results);
-      setTotalTitlesCount(response.data?.results || []);
-    } catch (error) {
-      console.log(error);
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred while fetching title history"
-      );
-    } finally {
-      setLoading(false)
-    }
-  }
+  // API CALLS
 
-  const getTitleByFilter = async (titleCode="", state="", status="") => {
-    setLoading(true);
+  const getAllUserTitles = async () => {
+    setLoadingKpi(true);
+    setLoadingTable(true);
     try {
-      
-      const response = await axios.get(
-        `${apiurl}/titles/search?titleCode=${titleCode}&state=${state}&status=${status}`,
-        { withCredentials: true }
-      );
-      console.log(response);
-      setTitles(response.data.results);
-      toast.success("Title fetched successfully");
-    } catch (error) {
-      console.log(error);
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred while fetching title"
-      );
+      const res = await axios.get(`${apiurl}/titles/all`, { withCredentials: true });
+      setTitles(res.data.results);
+      setAllTitles(res.data.results);
+    } catch(error) {
+      console.log(error)
+      toast.error("Failed to fetch title history");
     } finally {
-      setLoading(false);
+      setLoadingKpi(false);
+      setLoadingTable(false);
     }
   };
 
-  const handleDelete = async (titleId) => {
-    setLoading(true);
+  const getTitleByFilter = async (code="", state="", status="") => {
+    setLoadingTable(true);
     try {
-      const response = await axios.delete(`${apiurl}/titles/${titleId}`, { withCredentials: true });
-      console.log(response);
-      toast.success(response.data.message || "Title deleted successfully");
-      // Refresh titles list
-      getAllUserTitles();
-    } catch (error) {
-      console.log(error);
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred while deleting the title"
+      const res = await axios.get(
+        `${apiurl}/titles/search?titleCode=${code}&state=${state}&status=${status}`,
+        { withCredentials: true }
       );
+      setTitles(res.data.results);
+    } catch(error) {
+      console.log(error)
+      toast.error("Failed to fetch titles");
     } finally {
-      setLoading(false);
+      setLoadingTable(false);
     }
-  }
+  };
 
-  const hasUserInteracted = useRef(false);
-  useEffect(() => {
-    if (!hasUserInteracted.current) return;
-
-    const delay = setTimeout(() => {
-      console.log("filter titles");
-      getTitleByFilter(searchCode, selectedState, selectedStatus);
-    }, 2000); // 500ms debounce
-
-    return () => clearTimeout(delay);
-  }, [searchCode, selectedState, selectedStatus]);
+  const handleDelete = async (id) => {
+    setLoadingTable(true);
+    try {
+      await axios.delete(`${apiurl}/titles/${id}`, { withCredentials: true });
+      toast.success("Title deleted");
+      getAllUserTitles();
+    } catch(error) {
+      console.log(error)
+      toast.error("Delete failed");
+      setLoadingTable(false);
+    }
+  };
 
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
-    console.log("fetch all titles");
-    getAllUserTitles(); 
-  }, [])
+    getAllUserTitles();
+  }, []);
 
- 
+  const hasUserInteracted = useRef(false);
+  useEffect(() => {
+    if (!hasUserInteracted.current) return;
+    const delay = setTimeout(() => {
+      getTitleByFilter(searchCode, selectedState, selectedStatus);
+    }, 700);
+    return () => clearTimeout(delay);
+  }, [searchCode, selectedState, selectedStatus]);
+
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-indigo-50 px-6 py-14">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 px-6 py-10">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
-        <div className="mb-12 flex flex-col gap-4 justify-center items-center">
-          <h1 className="text-4xl text-center font-extrabold mb-2">
-            Submission History
-          </h1>
-          <p className="text-slate-600 text-center max-w-3xl">
-            A complete audit trail of all submitted titles with AI-generated
-            decisions, probability scores, and verification status.
+        {/* HEADER */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold mb-2">Submission History</h1>
+          <p className="text-slate-600 max-w-3xl mx-auto">
+            Audit trail of submitted titles with AI decisions and probabilities.
           </p>
         </div>
 
-        {/* KPI Cards */}
+        {/* KPI */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <KpiCard title="Total Submissions" value={totalTitlesCount.length} />
-          <KpiCard title="Accepted Titles" value={acceptedCount} accent="green" />
-          <KpiCard title="Rejected Titles" value={rejectedCount} accent="red" />
+          {loadingKpi ? (
+            <>
+              <KpiSkeleton />
+              <KpiSkeleton />
+              <KpiSkeleton />
+            </>
+          ) : (
+            <>
+              <KpiCard title="Total Submissions" value={allTitles.length} />
+              <KpiCard title="Accepted Titles" value={acceptedCount} accent="green" />
+              <KpiCard title="Rejected Titles" value={rejectedCount} accent="red" />
+            </>
+          )}
         </div>
 
-        {/* Search & Filters */}
+        {/* FILTERS */}
         <div className="mb-6 flex flex-col md:flex-row gap-4">
           <input
             placeholder="Search title by ID"
             onChange={(e) => {
               hasUserInteracted.current = true;
-              setSearchCode(e.target.value)
+              setSearchCode(e.target.value);
             }}
-            className="flex-1 px-5 py-3 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 px-5 py-3 rounded-xl border bg-white focus:ring-2 focus:ring-indigo-500"
           />
 
-          <select value={selectedState} 
+          <select
             onChange={(e) => {
               hasUserInteracted.current = true;
-              setSelectedState(e.target.value)
-            }} 
-            className="flex-[0.5] px-5 py-3 rounded-xl border border-slate-300 bg-white"
+              setSelectedState(e.target.value);
+            }}
+            className="flex-[0.5] px-5 py-3 rounded-xl border bg-white"
           >
             <option>All States</option>
-            {states.map((state) => (
-              <option key={state}>{state}</option>
-            ))}
+            {states.map(s => <option key={s}>{s}</option>)}
           </select>
 
-          <select value={selectedStatus} 
+          <select
             onChange={(e) => {
               hasUserInteracted.current = true;
-              setSelectedStatus(e.target.value)
-            }} 
-            className="flex-[0.5] px-5 py-3 rounded-xl border border-slate-300 bg-white"
+              setSelectedStatus(e.target.value);
+            }}
+            className="flex-[0.5] px-5 py-3 rounded-xl border bg-white"
           >
             <option>All Status</option>
             <option>Accepted</option>
@@ -196,93 +160,95 @@ const History = () => {
           </select>
         </div>
 
-        {/* Glass Table */}
-        <div className="backdrop-blur-xl bg-white/70 border border-slate-200 rounded-3xl shadow-xl overflow-hidden">
-
+        {/* TABLE */}
+        <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-slate-100 text-slate-600">
               <tr>
-                <th className="px-6 py-4 text-left">ID</th>
-                <th className="px-6 py-4 text-left">Title</th>
-                <th className="px-6 py-4 text-left">State</th>
-                <th className="px-6 py-4 text-left">Periodicity</th>
-                <th className="px-6 py-4 text-left">Probability</th>
-                <th className="px-6 py-4 text-left">Status</th>
-                <th className="px-6 py-4 text-left">Date</th>
-                <th className="px-6 py-4 text-center">Action</th>
+                {["ID","Title","State","Periodicity","Probability","Status","Date","Action"]
+                  .map(h => <th key={h} className="px-6 py-4 text-left">{h}</th>)}
               </tr>
             </thead>
 
             <tbody>
-              {titles.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-t hover:bg-indigo-50/40 transition"
-                >
-                  <td className="px-6 py-4 font-semibold text-indigo-600">
-                    {item.titleCode}
-                  </td>
-                  <td className="px-6 py-4">{item.titleName}</td>
-                  <td className="px-6 py-4">{item.state}</td>
-                  <td className="px-6 py-4">{item.periodity}</td>
-                  <td className="px-6 py-4 font-semibold">
-                    {item.verificationProbability}%
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={item.verified ? "ACCEPTED" : "REJECTED"} />
-                  </td>
-                  <td className="px-6 py-4 text-slate-500">
-                    {item.createdAt.split("T")[0]}
-                  </td>
-                  <td className="px-6 py-4 text-center">
+              {loadingTable ? (
+                <TableSkeleton />
+              ) : (
+                titles.map(item => (
+                  <tr key={item.id} className="border-t hover:bg-indigo-50/40">
+                    <td className="px-6 py-4 font-semibold text-indigo-600">{item.titleCode}</td>
+                    <td className="px-6 py-4">{item.titleName}</td>
+                    <td className="px-6 py-4">{item.state}</td>
+                    <td className="px-6 py-4">{item.periodity}</td>
+                    <td className="px-6 py-4 font-semibold">{item.verificationProbability}%</td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={item.verified ? "ACCEPTED" : "REJECTED"} />
+                    </td>
+                    <td className="px-6 py-4 text-slate-500">
+                      {item.createdAt.split("T")[0]}
+                    </td>
+                    <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="group cursor-pointer inline-flex items-center justify-center rounded-full p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                        title="Delete title"
+                        className="p-2 rounded-full cursor-pointer text-slate-400 hover:text-rose-600 hover:bg-rose-50"
                       >
-                        <TrashIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        <TrashIcon className="h-5 w-5" />
                       </button>
                     </td>
-                </tr>
-              ))}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   );
 };
 
+
 const KpiCard = ({ title, value, accent }) => (
   <div className="bg-white rounded-2xl shadow p-6">
     <p className="text-sm text-slate-500">{title}</p>
-    <p
-      className={`text-3xl font-extrabold mt-2 ${
-        accent === "green"
-          ? "text-emerald-600"
-          : accent === "red"
-          ? "text-rose-600"
-          : "text-indigo-600"
-      }`}
-    >
+    <p className={`text-3xl font-extrabold mt-2 ${
+      accent === "green" ? "text-emerald-600" :
+      accent === "red" ? "text-rose-600" : "text-indigo-600"
+    }`}>
       {value}
     </p>
   </div>
 );
 
-const StatusBadge = ({ status }) => {
-  const isAccepted = status === "ACCEPTED";
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
-        isAccepted
-          ? "bg-emerald-100 text-emerald-700"
-          : "bg-rose-100 text-rose-700"
-      }`}
-    >
-       {status}
-    </span>
-  );
-};
+const StatusBadge = ({ status }) => (
+  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+    status === "ACCEPTED"
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-rose-100 text-rose-700"
+  }`}>
+    {status}
+  </span>
+);
+
+const KpiSkeleton = () => (
+  <div className="bg-white rounded-2xl shadow p-6 animate-pulse">
+    <div className="h-4 w-28 bg-slate-200 rounded mb-3" />
+    <div className="h-8 w-16 bg-slate-300 rounded" />
+  </div>
+);
+
+const TableSkeleton = () => (
+  <>
+    {[1,2,3,4,5].map(i => (
+      <tr key={i} className="border-t animate-pulse">
+        {[1,2,3,4,5,6,7,8].map(j => (
+          <td key={j} className="px-6 py-4">
+            <div className="h-4 bg-slate-200 rounded" />
+          </td>
+        ))}
+      </tr>
+    ))}
+  </>
+);
 
 export default History;
