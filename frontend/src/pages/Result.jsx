@@ -1,5 +1,8 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router";
+import Loader from "../components/Loader";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+
 
 const Result = () => {
 
@@ -58,31 +61,82 @@ const Result = () => {
     );
   }
 
+  if(state.loading){
+    return <Loader />
+  }
+
   const {data: result} = state || {};
   const isAccepted = result.verified;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-16">
+    <div className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="max-w-5xl mx-auto">
 
         {/* Decision Header */}
         <div
-          className={`rounded-3xl p-10 shadow-xl text-white ${
-            isAccepted
-              ? "bg-gradient-to-br from-emerald-500 to-emerald-600"
-              : "bg-gradient-to-br from-rose-500 to-rose-600"
-          }`}
+          className={`
+            relative overflow-hidden rounded-3xl p-8 shadow-[0_10px_50px_rgba(0,0,0,0.25)]
+            backdrop-blur-xl border border-white/20
+            ${
+              isAccepted
+                ? "bg-gradient-to-br from-emerald-500 via-emerald-500 to-emerald-600"
+                : "bg-gradient-to-br from-rose-500 via-rose-500 to-rose-600"
+            }
+            text-white
+          `}
         >
-          <h1 className="text-4xl font-extrabold">
-            {isAccepted ? "Title Approved" : "Title Rejected"}
-          </h1>
+          {/* Glow layer */}
+          <div
+            className={`
+              absolute -inset-1 opacity-30 blur-3xl
+              ${
+                isAccepted
+                  ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
+                  : "bg-gradient-to-r from-rose-400 to-rose-600"
+              }
+            `}
+          />
 
-          <p className="mt-3 opacity-90 max-w-2xl">
-            {isAccepted
-              ? "Your title has successfully passed all verification checks and meets the regulatory guidelines."
-              : "Your title could not be verified as it closely resembles an existing registered title."}
-          </p>
+          {/* Content */}
+          <div className="relative flex flex-col gap-4">
+
+            {/* Header */}
+            <div className="flex items-center gap-4">
+              <div
+                className={`
+                  flex h-14 w-14 items-center justify-center rounded-2xl
+                  bg-white/20 backdrop-blur
+                `}
+              >
+                {isAccepted ? (
+                  <CheckCircleIcon className="h-8 w-8 text-white" />
+                ) : (
+                  <XCircleIcon className="h-8 w-8 text-white" />
+                )}
+              </div>
+
+              <h1 className="text-4xl font-extrabold tracking-tight">
+                {isAccepted ? "Title Approved" : "Title Rejected"}
+              </h1>
+            </div>
+
+            {/* Description */}
+            <p className="max-w-2xl text-lg leading-relaxed text-white/90">
+              {isAccepted
+                ? "Your title has successfully passed all AI, similarity, and regulatory verification checks."
+                : "Your title could not be approved because it closely matches an existing registered title under verification rules."}
+            </p>
+
+            {/* Footer Hint */}
+            <div className="mt-4 flex items-center gap-3 text-sm text-white/80">
+              <span className="inline-block rounded-full bg-white/20 px-4 py-1 font-semibold">
+                AI Verified
+              </span>
+              <span>Policy compliant • Secure decision</span>
+            </div>
+          </div>
         </div>
+
 
         {/* Probability Card */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
