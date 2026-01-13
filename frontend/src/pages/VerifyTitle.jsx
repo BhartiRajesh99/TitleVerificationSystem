@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
+import Loader from "../components/Loader";
 
 const VerifyTitle = () => {
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,8 @@ const VerifyTitle = () => {
       const response = await axios.post(`${apiurl}/titles/`, formData, { withCredentials: true });
 
       console.log(response)
-      navigate("/result", { state: { data: response.data.title } });
+
+      navigate("/result", { state: { data: response.data.title, loading } });
 
     } catch (error) {
       console.log(error);
@@ -106,7 +108,7 @@ const VerifyTitle = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-100 via-slate-100 to-white px-6 py-16">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 px-6 py-10">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
@@ -133,15 +135,15 @@ const VerifyTitle = () => {
           <div className="lg:col-span-3 backdrop-blur-xl bg-white/70 border border-slate-200 rounded-3xl shadow-xl p-10">
 
             <FormSection title="Title Details">
-              <Input label="Title Name" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="English title" />
+              <Input label="Title Name" value={title} required={true} onChange={(e) => setTitle(e.target.value)} placeholder="English title" />
               <Input label="Hindi Title" value={hindiTitle} onChange={(e) => setHindiTitle(e.target.value)} placeholder="हिंदी शीर्षक" />
               <Input label="Publication Name" value={publicationName} onChange={(e) => setPublicationName(e.target.value)} />
-              <Select label="Periodicity" value={periodity} onChange={(e) => setPeriodity(e.target.value)} options={["Daily", "Weekly", "Monthly"]} />
+              <Select label="Periodicity" value={periodity} required={true} onChange={(e) => setPeriodity(e.target.value)} options={["Daily", "Weekly", "Monthly"]} />
             </FormSection>
 
             <FormSection title="Applicant Information">
-              <Input label="Owner Name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} />
-              <Select label="State" value={state} onChange={(e) => setState(e.target.value)} options={states} />
+              <Input label="Owner Name" value={ownerName} required={true} onChange={(e) => setOwnerName(e.target.value)} />
+              <Select label="State" value={state} required={true} onChange={(e) => setState(e.target.value)} options={states} />
             </FormSection>
 
           </div>
@@ -217,12 +219,7 @@ const VerifyTitle = () => {
 
 
           {loading && (
-            <div className="mt-6 flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
-              <p className="mt-3 text-slate-600">
-                AI is evaluating similarity & meaning…
-              </p>
-            </div>
+            <Loader/>
           )}
         </div>
       </div>
@@ -241,12 +238,13 @@ const FormSection = ({ title, children }) => (
   </>
 );
 
-const Input = ({ label, value, onChange, placeholder }) => (
+const Input = ({ label, value, required=false, onChange, placeholder }) => (
   <div>
     <label className="block text-sm font-medium text-slate-700 mb-1">
       {label}
     </label>
     <input
+      required={required}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -255,12 +253,12 @@ const Input = ({ label, value, onChange, placeholder }) => (
   </div>
 );
 
-const Select = ({ label, value, onChange, options }) => (
+const Select = ({ label, value, required=false, onChange, options }) => (
   <div>
     <label className="block text-sm font-medium text-slate-700 mb-1">
       {label}
     </label>
-    <select value={value} onChange={onChange} className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 focus:ring-2 focus:ring-indigo-500">
+    <select value={value} required={required} onChange={onChange} className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 focus:ring-2 focus:ring-indigo-500">
       <option>Select</option>
       {options.map((o) => (
         <option key={o}>{o}</option>
