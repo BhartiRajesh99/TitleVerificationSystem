@@ -206,16 +206,21 @@ const deleteTitle = async (req, res) => {
       return res.status(404).json({ message: "Title not found" });
     }
 
-    // Check if user owns this title
-    if (existingTitle.createdBy.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to delete this title" });
+    const isOwner = existingTitle.createdBy.toString() === req.user.id;
+
+    const isAdmin = req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        message: "You are not authorized to delete this title",
+      });
     }
 
     await Title.findByIdAndDelete(req.params.id);
     const anyTitle = await Title.findOne();
-    if (anyTitle) await updateSimilarityForTitleAndRelated(anyTitle._id);
+    if (anyTitle) {
+      await updateSimilarityForTitleAndRelated(anyTitle._id);
+    }
 
     res.json({ message: "Title deleted and scores updated" });
   } catch (error) {
