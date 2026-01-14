@@ -41,6 +41,7 @@ const History = () => {
       toast.error("Failed to fetch title history");
     } finally {
       setPageLoading(false);
+      setTableLoading(false);
     }
   };
 
