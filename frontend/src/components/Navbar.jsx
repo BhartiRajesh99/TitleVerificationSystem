@@ -11,7 +11,7 @@ const Navbar = () => {
   if (loading) return <NavbarSkeleton />;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200 shadow-[0_10px_80px_rgba(79,70,229,0.12)]">
+    <nav className="sticky top-0 z-50 bg-transparent backdrop-blur-2xl border-b border-slate-200 shadow-[0_10px_80px_rgba(79,70,229,0.12)]">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* Brand */}
@@ -19,7 +19,30 @@ const Navbar = () => {
           to="/"
           className="text-xl font-extrabold tracking-tight text-indigo-600"
         >
-          AI Title Verification
+          <svg width="240" height="48" viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+            {/* Icon  */}
+            <circle cx="24" cy="24" r="20" fill="#EEF2FF"/>
+            <circle cx="24" cy="16" r="3" fill="#4F46E5"/>
+            <circle cx="16" cy="24" r="3" fill="#4F46E5"/>
+            <circle cx="32" cy="24" r="3" fill="#4F46E5"/>
+            <circle cx="24" cy="32" r="3" fill="#4F46E5"/>
+
+            {/* Connections  */}
+            <line x1="24" y1="16" x2="16" y2="24" stroke="#6366F1" />
+            <line x1="16" y1="24" x2="24" y2="32" stroke="#6366F1" />
+            <line x1="24" y1="32" x2="32" y2="24" stroke="#6366F1" />
+            <line x1="32" y1="24" x2="24" y2="16" stroke="#6366F1" />
+
+            {/* Text */}
+            <text x="56" y="30"
+              font-size="18"
+              font-weight="700"
+              fill="#1E1B4B"
+              font-family="Inter, system-ui, sans-serif">
+              AI Title Verify
+            </text>
+          </svg>
         </NavLink>
 
         {/* Desktop Menu */}
