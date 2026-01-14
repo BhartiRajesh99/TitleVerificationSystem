@@ -15,7 +15,7 @@ const History = () => {
 
   
   const [pageLoading, setPageLoading] = useState(true);
-  const [tableLoading, setTableLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(true);
 
   const acceptedCount = allTitles.filter(t => t.verified).length;
   const rejectedCount = allTitles.length - acceptedCount;
@@ -43,7 +43,6 @@ const History = () => {
       setPageLoading(false);
     }
   };
-
 
   const handleDelete = async (id) => {
     try {
