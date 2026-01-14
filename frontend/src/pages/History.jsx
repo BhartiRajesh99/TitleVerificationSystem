@@ -110,6 +110,10 @@ const History = () => {
 
         {/* HEADER */}
         <div className="text-center mb-12">
+          <span className="inline-block mb-4 px-4 py-1 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700">
+            AI-Driven • Submission Log
+          </span>
+
           <h1 className="text-4xl font-extrabold mb-2">Submission History</h1>
           <p className="text-slate-600 max-w-3xl mx-auto">
             Audit trail of submitted titles with AI decisions and confidence scores.
