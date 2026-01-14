@@ -36,10 +36,10 @@ const Navbar = () => {
 
             {/* Text */}
             <text x="56" y="30"
-              font-size="18"
-              font-weight="700"
+              fontSize="18"
+              fontWeight="700"
               fill="#1E1B4B"
-              font-family="Inter, system-ui, sans-serif">
+              fontFamily="Inter, system-ui, sans-serif">
               AI Title Verify
             </text>
           </svg>
@@ -201,8 +201,8 @@ const NavItem = ({ to, children, onClick }) => (
 );
 
 const NavbarSkeleton = () => (
-  <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200">
-    <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center animate-pulse">
+  <nav className="sticky top-0 z-50 h-[80.8px] bg-white/70 backdrop-blur-xl border-b border-slate-200">
+    <div className="max-w-7xl mx-auto px-6 py-7 flex justify-between items-center animate-pulse">
       <div className="h-6 w-48 bg-slate-200 rounded"></div>
       <div className="hidden md:flex gap-6">
         <div className="h-4 w-16 bg-slate-200 rounded"></div>
