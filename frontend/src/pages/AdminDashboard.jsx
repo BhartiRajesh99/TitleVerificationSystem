@@ -6,127 +6,106 @@ import toast from "react-hot-toast";
 const AdminDashboard = () => {
   const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-  // Data states
-  const [allTitlesCount, setAllTitlesCount] = useState(0);
-  const [todayRequests, setTodayRequests] = useState(0);
-  const [approvedTitles, setApprovedTitles] = useState(0);
-  const [rejectedTitles, setRejectedTitles] = useState(0);
+  // states
+  const [stats, setStats] = useState(null);
+  const [todayRequests, setTodayRequests] = useState(null);
   const [rejectionInsights, setRejectionInsights] = useState(null);
   const [probabilityBreakdown, setProbabilityBreakdown] = useState(null);
   const [topStates, setTopStates] = useState(null);
   const [recentSubmissions, setRecentSubmissions] = useState(null);
 
-  // Loading states
-  const [loadingRequests, setLoadingRequests] = useState(true)
-  const [loadingStats, setLoadingStats] = useState(true);
-  const [loadingInsights, setLoadingInsights] = useState(true);
-  const [loadingProbability, setLoadingProbability] = useState(true);
-  const [loadingStates, setLoadingStates] = useState(true);
-  const [loadingRecent, setLoadingRecent] = useState(true);
+  // loading states
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [recentLoading, setRecentLoading] = useState(true);
 
-  // Api calls
-  const fetchTodayRequests = async () => {
-    try {
-      const res = await axios.get(`${apiurl}/admin/today-requests`, { withCredentials: true });
-      setTodayRequests(res.data.count);
-    } catch(error) {
-      console.log(error)
-      toast.error("Failed to load today's requests");
-    } finally {
-      setLoadingRequests(false)
-    }
+  // data fetch
+  const loadDashboard = async () => {
+    setDashboardLoading(true);
+
+    const results = await Promise.allSettled([
+      axios.get(`${apiurl}/admin/stats`, { withCredentials: true }),
+      axios.get(`${apiurl}/admin/today-requests`, { withCredentials: true }),
+      axios.get(`${apiurl}/admin/rejection-insights`, { withCredentials: true }),
+      axios.get(`${apiurl}/admin/probability-breakdown`, { withCredentials: true }),
+      axios.get(`${apiurl}/admin/top-states`, { withCredentials: true }),
+      axios.get(`${apiurl}/admin/recent-submissions`, { withCredentials: true })
+    ]);
+
+    const [
+      statsRes,
+      todayRes,
+      rejectionRes,
+      probabilityRes,
+      statesRes,
+      recentRes
+    ] = results;
+
+    console.log(recentRes.value.data.submissions)
+    if (statsRes.status === "fulfilled") setStats(statsRes.value.data);
+    if (todayRes.status === "fulfilled") setTodayRequests(todayRes.value.data.count);
+    if (rejectionRes.status === "fulfilled") setRejectionInsights(rejectionRes.value.data.insights);
+    if (probabilityRes.status === "fulfilled") setProbabilityBreakdown(probabilityRes.value.data.breakdown);
+    if (statesRes.status === "fulfilled") setTopStates(statesRes.value.data.states);
+    if (recentRes.status === "fulfilled") setRecentSubmissions(recentRes.value.data.submissions);
+
+    results.forEach((r, i) => {
+      if (r.status === "rejected") {
+        console.error(r.reason);
+        toast.error(`Some dashboard data failed to load`);
+      }
+    });
+
+    setDashboardLoading(false);
+    setRecentLoading(false);
   };
 
-  const getAdminStats = async () => {
-    try {
-      const res = await axios.get(`${apiurl}/admin/stats`, { withCredentials: true });
-      setApprovedTitles(res.data.approved);
-      setRejectedTitles(res.data.rejected);
-      setAllTitlesCount(res.data.total);
-    } catch (error){
-      console.log(error)
-      toast.error("Failed to load statistics");
-    } finally {
-      setLoadingStats(false);
-    }
-  };
-
-  const getRejectionInsights = async () => {
-    try {
-      const res = await axios.get(`${apiurl}/admin/rejection-insights`, { withCredentials: true });
-      setRejectionInsights(res.data.insights);
-    } catch(error) {
-      console.log(error)
-      toast.error("Failed to load rejection insights");
-    } finally {
-      setLoadingInsights(false);
-    }
-  };
-
-  const getProbabilityBreakdown = async () => {
-    try {
-      const res = await axios.get(`${apiurl}/admin/probability-breakdown`, { withCredentials: true });
-      setProbabilityBreakdown(res.data.breakdown);
-    } catch(error) {
-      console.log(error)
-      toast.error("Failed to load probability breakdown");
-    } finally {
-      setLoadingProbability(false);
-    }
-  };
-
-  const getTopStatesBySubmissions = async () => {
-    try {
-      const res = await axios.get(`${apiurl}/admin/top-states`, { withCredentials: true });
-      setTopStates(res.data.states);
-    } catch(error) {
-      console.log(error)
-      toast.error("Failed to load top states");
-    } finally {
-      setLoadingStates(false);
-    }
-  };
-
-  const getRecentSubmissions = async () => {
-    try {
-      const res = await axios.get(`${apiurl}/admin/recent-submissions`, { withCredentials: true });
-      setRecentSubmissions(res.data.submissions);
-    } catch(error) {
-      console.log(error)
-      toast.error("Failed to load recent submissions");
-    } finally {
-      setLoadingRecent(false);
-    }
-  };
-
+  // delete
   const handleDelete = async (id) => {
     try {
-      setLoadingRecent(true)
-      await axios.delete(`${apiurl}/admin/delete-title/${id}`, { withCredentials: true });
-      toast.success("Title deleted");
-      getRecentSubmissions();
+      setRecentLoading(true);
 
-    } catch(error) {
+      // find deleted item before deleting
+      const deletedItem = recentSubmissions.find(item => item._id === id);
+
+      const response = await axios.delete(`${apiurl}/admin/delete-title/${id}`, {
+        withCredentials: true
+      });
+
+      console.log(response)
+      toast.success("Title deleted");
+
+      // update table
+      setRecentSubmissions(prev =>
+        prev.filter(item => item._id !== id)
+      );
+
+      // update states
+      setStats(prev => {
+        if (!prev || !deletedItem) return prev;
+
+        return {
+          ...prev,
+          total: prev.total - 1,
+          approved: deletedItem.verified ? prev.approved - 1 : prev.approved,
+          rejected: !deletedItem.verified ? prev.rejected - 1 : prev.rejected
+        };
+      });
+
+    } catch (error) {
       console.log(error)
       toast.error("Delete failed");
     } finally {
-      setLoadingRecent(false);
+      setRecentLoading(false);
     }
   };
 
-  // Initial data fetch
-  useEffect(() => {
-    getAdminStats();
-    fetchTodayRequests();
-    getRejectionInsights();
-    getProbabilityBreakdown();
-    getTopStatesBySubmissions();
-    getRecentSubmissions();
-  }, [loadingRecent]);
 
-  // UI
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-indigo-50 px-6 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 px-6 py-10">
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
@@ -142,14 +121,14 @@ const AdminDashboard = () => {
 
         {/* KPI */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          {loadingStats && loadingRequests
+          {dashboardLoading
             ? Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
             : (
               <>
-                <StatCard title="Total Titles" value={allTitlesCount} />
-                <StatCard title="Today's Requests" value={todayRequests} accent="blue" />
-                <StatCard title="Approved Titles" value={approvedTitles} accent="green" />
-                <StatCard title="Rejected Titles" value={rejectedTitles} accent="red" />
+                <StatCard title="Total Titles" value={stats?.total ?? "—"} />
+                <StatCard title="Today's Requests" value={todayRequests ?? "—"} accent="blue" />
+                <StatCard title="Approved Titles" value={stats?.approved ?? "—"} accent="green" />
+                <StatCard title="Rejected Titles" value={stats?.rejected ?? "—"} accent="red" />
               </>
             )}
         </div>
@@ -157,7 +136,7 @@ const AdminDashboard = () => {
         {/* ANALYTICS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <AnalyticsCard title="Decision Distribution">
-            {loadingInsights ? <InsightSkeleton /> : (
+            {!rejectionInsights ? <InsightSkeleton /> : (
               <>
                 <InsightRow label="Semantic Similarity" value={`${rejectionInsights.semantic}%`} />
                 <InsightRow label="Rule Violation" value={`${rejectionInsights.rule}%`} />
@@ -168,7 +147,7 @@ const AdminDashboard = () => {
           </AnalyticsCard>
 
           <AnalyticsCard title="Probability Breakdown">
-            {loadingProbability ? <BarSkeleton /> : (
+            {!probabilityBreakdown ? <BarSkeleton /> : (
               Object.entries(probabilityBreakdown).map(([k, v]) => (
                 <ProbabilityBar key={k} label={k} value={v} />
               ))
@@ -176,7 +155,7 @@ const AdminDashboard = () => {
           </AnalyticsCard>
 
           <AnalyticsCard title="Top States by Submissions">
-            {loadingStates ? <InsightSkeleton /> : (
+            {!topStates ? <InsightSkeleton /> : (
               topStates.map((s, i) => (
                 <InsightRow key={i} label={s.state} value={`${s.percentage}%`} />
               ))
@@ -186,25 +165,32 @@ const AdminDashboard = () => {
 
         {/* TABLE */}
         <h2 className="text-2xl font-bold text-center mb-6">Recent Title Submissions</h2>
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl shadow overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-600">
+            <thead className="bg-slate-100 text-slate-600">
               <tr>
-                {["ID", "Title", "State", "Probability", "Status", "Action"].map(h => (
-                  <th key={h} className="px-5 py-3 text-left">{h}</th>
+                {["ID", "Title", "State", "Periodicity", "Acceptability", "Status", "Date", "Action"].map(h => (
+                  <th key={h} className="px-6 py-4 text-left">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {loadingRecent ? <TableSkeleton /> : recentSubmissions.map(item => (
-                <tr key={item._id} className="border-t">
+              {recentLoading ? <TableSkeleton /> : recentSubmissions?.map(item => (
+                <tr key={item._id} className="border-t hover:bg-indigo-50/40">
                   <td className="px-5 py-3 font-semibold text-indigo-600">{item.titleCode}</td>
                   <td className="px-5 py-3">{item.titleName}</td>
                   <td className="px-5 py-3">{item.state}</td>
+                  <td className="px-6 py-4">{item.periodity}</td>
                   <td className="px-5 py-3 font-semibold">{item.verificationProbability}%</td>
                   <td className="px-5 py-3"><StatusBadge status={item.verified} /></td>
+                  <td className="px-6 py-4 text-slate-500">
+                    {item.createdAt.split("T")[0]}
+                  </td>
                   <td className="px-5 py-3">
-                    <button onClick={() => handleDelete(item._id)} className="text-rose-600 cursor-pointer hover:bg-rose-50 p-2 rounded-full">
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="text-rose-600 cursor-pointer hover:bg-rose-50 p-2 rounded-full"
+                    >
                       <TrashIcon className="h-5 w-5" />
                     </button>
                   </td>
@@ -218,8 +204,6 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
-// UI Components
 
 const AnalyticsCard = ({ title, children }) => (
   <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -259,8 +243,6 @@ const ProbabilityBar = ({ label, value }) => (
     </div>
   </div>
 );
-
-// SKELETONS
 
 const StatSkeleton = () => (
   <div className="bg-white rounded-2xl shadow p-6 animate-pulse">

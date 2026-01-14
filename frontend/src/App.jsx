@@ -6,21 +6,26 @@ import VerifyTitle from "./pages/VerifyTitle";
 import Result from "./pages/Result";
 import History from "./pages/History";
 import AdminDashboard from "./pages/AdminDashboard";
-import Navbar from "./components/Navbar";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import PublicRoute from "./routes/PublicRoute";
 import NotFound from "./components/NotFound";
+import MainLayout from "./layout/MainLayout";
 
 function App() {
   return (
     <>
       <Toaster position="bottom-right" />
-      <Navbar />
-
        <Routes>
-        <Route path="/" element={<Home />} />
+        <Route 
+          path="/" 
+          element={
+            <MainLayout>
+              <Home />
+            </MainLayout>
+          } 
+        />
         <Route path="/login" 
           element={
             <PublicRoute>
@@ -41,7 +46,9 @@ function App() {
           path="/verify"
           element={
             <ProtectedRoute allowedRoles={["user", "admin"]}>
-              <VerifyTitle />
+              <MainLayout>
+                <VerifyTitle />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -50,7 +57,9 @@ function App() {
           path="/result"
           element={
             <ProtectedRoute allowedRoles={["user", "admin"]}>
-              <Result />
+              <MainLayout>
+                <Result />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -59,7 +68,9 @@ function App() {
           path="/history"
           element={
             <ProtectedRoute allowedRoles={["user", "admin"]}>
-              <History />
+              <MainLayout>
+                <History />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -69,12 +80,21 @@ function App() {
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={["admin"]}> 
-              <AdminDashboard />
+              <MainLayout>
+                <AdminDashboard />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
 
-         <Route path="*" element={<NotFound />} />
+         <Route 
+          path="*" 
+          element={
+            <MainLayout>
+              <NotFound />
+            </MainLayout>
+          } 
+        />
       </Routes>
     </>
   );

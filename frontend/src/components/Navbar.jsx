@@ -10,10 +10,8 @@ const Navbar = () => {
 
   if (loading) return <NavbarSkeleton />;
 
-  const login = () => navigate("/login");
-
   return (
-    <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200 shadow-[0_10px_40px_rgba(79,70,229,0.12)]">
+    <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200 shadow-[0_10px_80px_rgba(79,70,229,0.12)]">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* Brand */}
@@ -47,8 +45,8 @@ const Navbar = () => {
             onClick={logout}
             className="
               flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold
-              bg-indigo-600 text-white
-              hover:bg-indigo-700 transition cursor-pointer
+              bg-rose-600 text-white
+              hover:bg-rose-700 transition cursor-pointer
             "
           >
             <LogOut size={14} />

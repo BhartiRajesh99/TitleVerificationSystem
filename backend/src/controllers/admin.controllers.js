@@ -227,9 +227,7 @@ const getRecentSubmissions = async (req, res) => {
     const submissions = await Title.find({})
       .sort({ createdAt: -1 })   // latest first
       .limit(10)
-      .select(
-        "titleCode titleName state verificationProbability verified createdAt"
-      );
+      
 
     return res.status(200).json({
       success: true,

@@ -6,22 +6,20 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 const History = () => {
   const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-  // Filter States
   const [searchCode, setSearchCode] = useState("");
   const [selectedState, setSelectedState] = useState("All States");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
 
-  const [titles, setTitles] = useState([]);
   const [allTitles, setAllTitles] = useState([]);
+  const [titles, setTitles] = useState([]);
 
-  // Loading States
-  const [loadingKpi, setLoadingKpi] = useState(true);
-  const [loadingTable, setLoadingTable] = useState(true);
+  
+  const [pageLoading, setPageLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
 
   const acceptedCount = allTitles.filter(t => t.verified).length;
   const rejectedCount = allTitles.length - acceptedCount;
 
-  // List of Indian states and union territories
   const states = [
     "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa",
     "Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala",
@@ -32,50 +30,36 @@ const History = () => {
     "Lakshadweep","Puducherry","Andaman and Nicobar Islands"
   ];
 
-  // API CALLS
-
   const getAllUserTitles = async () => {
-    setLoadingKpi(true);
-    setLoadingTable(true);
+    setPageLoading(true);
     try {
       const res = await axios.get(`${apiurl}/titles/all`, { withCredentials: true });
-      setTitles(res.data.results);
       setAllTitles(res.data.results);
-    } catch(error) {
-      console.log(error)
+      setTitles(res.data.results);
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to fetch title history");
     } finally {
-      setLoadingKpi(false);
-      setLoadingTable(false);
+      setPageLoading(false);
     }
   };
 
-  const getTitleByFilter = async (code="", state="", status="") => {
-    setLoadingTable(true);
-    try {
-      const res = await axios.get(
-        `${apiurl}/titles/search?titleCode=${code}&state=${state}&status=${status}`,
-        { withCredentials: true }
-      );
-      setTitles(res.data.results);
-    } catch(error) {
-      console.log(error)
-      toast.error("Failed to fetch titles");
-    } finally {
-      setLoadingTable(false);
-    }
-  };
 
   const handleDelete = async (id) => {
-    setLoadingTable(true);
     try {
+      setTableLoading(true);
+
       await axios.delete(`${apiurl}/titles/${id}`, { withCredentials: true });
       toast.success("Title deleted");
-      getAllUserTitles();
-    } catch(error) {
-      console.log(error)
+
+      setAllTitles(prev => prev.filter(t => t.id !== id));
+      setTitles(prev => prev.filter(t => t.id !== id));
+
+    } catch (error) {
+      console.error(error);
       toast.error("Delete failed");
-      setLoadingTable(false);
+    } finally {
+      setTableLoading(false);
     }
   };
 
@@ -87,13 +71,37 @@ const History = () => {
   }, []);
 
   const hasUserInteracted = useRef(false);
+
   useEffect(() => {
     if (!hasUserInteracted.current) return;
+
+    setTableLoading(true);
+
     const delay = setTimeout(() => {
-      getTitleByFilter(searchCode, selectedState, selectedStatus);
-    }, 700);
+      let filtered = [...allTitles];
+
+      if (searchCode) {
+        filtered = filtered.filter(t =>
+          t.titleCode.toLowerCase().includes(searchCode.toLowerCase())
+        );
+      }
+
+      if (selectedState !== "All States") {
+        filtered = filtered.filter(t => t.state === selectedState);
+      }
+
+      if (selectedStatus !== "All Status") {
+        filtered = filtered.filter(t =>
+          selectedStatus === "Accepted" ? t.verified : !t.verified
+        );
+      }
+
+      setTitles(filtered);
+      setTableLoading(false);
+    }, 500);
+
     return () => clearTimeout(delay);
-  }, [searchCode, selectedState, selectedStatus]);
+  }, [searchCode, selectedState, selectedStatus, allTitles]);
 
   
   return (
@@ -104,13 +112,13 @@ const History = () => {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-extrabold mb-2">Submission History</h1>
           <p className="text-slate-600 max-w-3xl mx-auto">
-            Audit trail of submitted titles with AI decisions and probabilities.
+            Audit trail of submitted titles with AI decisions and confidence scores.
           </p>
         </div>
 
         {/* KPI */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {loadingKpi ? (
+          {pageLoading ? (
             <>
               <KpiSkeleton />
               <KpiSkeleton />
@@ -129,30 +137,30 @@ const History = () => {
         <div className="mb-6 flex flex-col md:flex-row gap-4">
           <input
             placeholder="Search title by ID"
+            className="flex-1 px-5 py-3 shadow rounded-xl bg-white focus:ring-2 focus:ring-indigo-500"
             onChange={(e) => {
               hasUserInteracted.current = true;
               setSearchCode(e.target.value);
             }}
-            className="flex-1 px-5 py-3 rounded-xl border bg-white focus:ring-2 focus:ring-indigo-500"
           />
 
           <select
+            className="flex-[0.5] shadow px-5 py-3 rounded-xl bg-white"
             onChange={(e) => {
               hasUserInteracted.current = true;
               setSelectedState(e.target.value);
             }}
-            className="flex-[0.5] px-5 py-3 rounded-xl border bg-white"
           >
             <option>All States</option>
             {states.map(s => <option key={s}>{s}</option>)}
           </select>
 
           <select
+            className="flex-[0.5] shadow px-5 py-3 rounded-xl bg-white"
             onChange={(e) => {
               hasUserInteracted.current = true;
               setSelectedStatus(e.target.value);
             }}
-            className="flex-[0.5] px-5 py-3 rounded-xl border bg-white"
           >
             <option>All Status</option>
             <option>Accepted</option>
@@ -161,17 +169,17 @@ const History = () => {
         </div>
 
         {/* TABLE */}
-        <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl shadow overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-slate-100 text-slate-600">
               <tr>
-                {["ID","Title","State","Periodicity","Probability","Status","Date","Action"]
+                {["ID","Title","State","Periodicity","Acceptability","Status","Date","Action"]
                   .map(h => <th key={h} className="px-6 py-4 text-left">{h}</th>)}
               </tr>
             </thead>
 
             <tbody>
-              {loadingTable ? (
+              {tableLoading ? (
                 <TableSkeleton />
               ) : (
                 titles.map(item => (
