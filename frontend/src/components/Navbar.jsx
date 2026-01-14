@@ -201,7 +201,7 @@ const NavItem = ({ to, children, onClick }) => (
 );
 
 const NavbarSkeleton = () => (
-  <nav className="sticky top-0 z-50 h-[80.8px] bg-white/70 backdrop-blur-xl border-b border-slate-200">
+  <nav className="sticky top-0 z-50 h-[80.8px] bg-transparent backdrop-blur-2xl border-b border-slate-200 shadow-[0_10px_80px_rgba(79,70,229,0.12)]">
     <div className="max-w-7xl mx-auto px-6 py-7 flex justify-between items-center animate-pulse">
       <div className="h-6 w-48 bg-slate-200 rounded"></div>
       <div className="hidden md:flex gap-6">
