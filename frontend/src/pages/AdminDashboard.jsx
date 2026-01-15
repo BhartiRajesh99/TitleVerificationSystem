@@ -177,14 +177,14 @@ const AdminDashboard = () => {
             <tbody>
               {recentLoading ? <TableSkeleton /> : recentSubmissions?.map(item => (
                 <tr key={item._id} className="border-t hover:bg-indigo-50/40">
-                  <td className="px-5 py-3 font-semibold text-indigo-600">{item.titleCode}</td>
-                  <td className="px-5 py-3">{item.titleName}</td>
-                  <td className="px-5 py-3">{item.state}</td>
-                  <td className="px-6 py-4">{item.periodity}</td>
-                  <td className="px-5 py-3 font-semibold">{item.verificationProbability}%</td>
+                  <td className="px-5 py-3 font-semibold text-indigo-600">{item.titleCode || "--"}</td>
+                  <td className="px-5 py-3">{item.titleName || "--"}</td>
+                  <td className="px-5 py-3">{item.state || "--"}</td>
+                  <td className="px-6 py-4">{item.periodity || "--"}</td>
+                  <td className="px-5 py-3 font-semibold">{item.verificationProbability ? `${item.verificationProbability}%` : "--"}</td>
                   <td className="px-5 py-3"><StatusBadge status={item.verified} /></td>
                   <td className="px-6 py-4 text-slate-500">
-                    {item.createdAt.split("T")[0]}
+                    {item.createdAt.split("T")[0] || "--"}
                   </td>
                   <td className="px-5 py-3">
                     <button
@@ -214,7 +214,7 @@ const AnalyticsCard = ({ title, children }) => (
 
 const StatCard = ({ title, value, accent }) => (
   <div className="bg-white rounded-2xl shadow p-6">
-    <p className="text-sm text-slate-500">{title}</p>
+    <p className="text-sm text-slate-500">{title || "--"}</p>
     <p className={`text-3xl font-extrabold mt-2 ${
       accent === "green" ? "text-emerald-600" :
       accent === "red" ? "text-rose-600" :
@@ -228,18 +228,18 @@ const StatCard = ({ title, value, accent }) => (
 const InsightRow = ({ label, value }) => (
   <div className="flex justify-between text-sm mb-3">
     <span className="text-slate-600">{label}</span>
-    <span className="font-semibold">{value}</span>
+    <span className="font-semibold">{value || "--"}</span>
   </div>
 );
 
 const ProbabilityBar = ({ label, value }) => (
   <div className="mb-4">
     <div className="flex justify-between text-xs mb-1">
-      <span>{label}%</span>
-      <span>{value}%</span>
+      <span>{label ? `${label}%` : "--"}</span>
+      <span>{value ? `${value}%` : "--"}</span>
     </div>
     <div className="h-2 rounded-full bg-slate-200">
-      <div className="h-2 rounded-full bg-indigo-600" style={{ width: `${value}%` }} />
+      <div className="h-2 rounded-full bg-indigo-600" style={{ width: `${value ? value : 0}%` }} />
     </div>
   </div>
 );
@@ -280,7 +280,7 @@ const TableSkeleton = () => (
   <>
     {[1,2,3,4,5].map(i => (
       <tr key={i} className="border-t animate-pulse">
-        {[1,2,3,4,5,6].map(j => (
+        {[1,2,3,4,5,6,7,8].map(j => (
           <td key={j} className="px-5 py-4">
             <div className="h-4 bg-slate-200 rounded" />
           </td>

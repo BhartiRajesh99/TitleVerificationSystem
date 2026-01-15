@@ -1,4 +1,3 @@
-import React from "react";
 import { useLocation, useNavigate } from "react-router";
 import Loader from "../components/Loader";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
@@ -72,70 +71,89 @@ const Result = () => {
     <div className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="max-w-5xl mx-auto">
 
-        {/* Decision Header */}
+        <div className="text-center mb-14">
+        {/* Badge */}
+        <span className="inline-block mb-3 px-4 py-1 text-sm font-semibold rounded-full bg-indigo-100 text-indigo-700">
+          AI Verified • Policy Driven • Secure
+        </span>
+
+        {/* Title */}
+        <h1 className="text-5xl font-extrabold tracking-tight text-slate-900">
+          Title Verification Result
+        </h1>
+
+        {/* Description */}
+        <p className="mt-4 text-md text-slate-600 max-w-3xl mx-auto">
+          The submitted title has been evaluated using phonetic matching,
+          semantic analysis, and regulatory validation to ensure uniqueness
+          and compliance with publication guidelines.
+        </p>
+      </div>
+
+      {/* Decision Header */}
+      <div
+        className={`
+          relative overflow-hidden rounded-3xl p-6 shadow-[0_4px_10px_rgba(0,0,0,0.25)]
+          backdrop-blur-xl border border-white/20
+          ${
+            isAccepted
+              ? "bg-gradient-to-br from-emerald-500 via-emerald-500 to-emerald-600"
+              : "bg-gradient-to-br from-rose-500 via-rose-500 to-rose-600"
+          }
+          text-white
+        `}
+      >
+        {/* Glow layer */}
         <div
           className={`
-            relative overflow-hidden rounded-3xl p-8 shadow-[0_10px_50px_rgba(0,0,0,0.25)]
-            backdrop-blur-xl border border-white/20
+            absolute -inset-1 opacity-30 blur-3xl
             ${
               isAccepted
-                ? "bg-gradient-to-br from-emerald-500 via-emerald-500 to-emerald-600"
-                : "bg-gradient-to-br from-rose-500 via-rose-500 to-rose-600"
+                ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
+                : "bg-gradient-to-r from-rose-400 to-rose-600"
             }
-            text-white
           `}
-        >
-          {/* Glow layer */}
-          <div
-            className={`
-              absolute -inset-1 opacity-30 blur-3xl
-              ${
-                isAccepted
-                  ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
-                  : "bg-gradient-to-r from-rose-400 to-rose-600"
-              }
-            `}
-          />
+        />
 
-          {/* Content */}
-          <div className="relative flex flex-col gap-4">
+        {/* Content */}
+        <div className="relative flex flex-col gap-2">
 
-            {/* Header */}
-            <div className="flex items-center gap-4">
-              <div
-                className={`
-                  flex h-14 w-14 items-center justify-center rounded-2xl
-                  bg-white/20 backdrop-blur
-                `}
-              >
-                {isAccepted ? (
-                  <CheckCircleIcon className="h-8 w-8 text-white" />
-                ) : (
-                  <XCircleIcon className="h-8 w-8 text-white" />
-                )}
-              </div>
-
-              <h1 className="text-4xl font-extrabold tracking-tight">
-                {isAccepted ? "Title Approved" : "Title Rejected"}
-              </h1>
+          {/* Header */}
+          <div className="flex items-center gap-2">
+            <div
+              className={`
+                flex h-12 w-12 items-center justify-center rounded-2xl
+                bg-white/20 backdrop-blur
+              `}
+            >
+              {isAccepted ? (
+                <CheckCircleIcon className="h-8 w-8 text-white" />
+              ) : (
+                <XCircleIcon className="h-8 w-8 text-white" />
+              )}
             </div>
 
-            {/* Description */}
-            <p className="max-w-2xl text-lg leading-relaxed text-white/90">
-              {isAccepted
-                ? "Your title has successfully passed all AI, similarity, and regulatory verification checks."
-                : "Your title could not be approved because it closely matches an existing registered title under verification rules."}
-            </p>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              {isAccepted ? "Title Approved" : "Title Rejected"}
+            </h1>
+          </div>
 
-            {/* Footer Hint */}
-            <div className="mt-4 flex items-center gap-3 text-sm text-white/80">
-              <span className="inline-block rounded-full bg-white/20 px-4 py-1 font-semibold">
-                AI Verified
-              </span>
-              <span>Policy compliant • Secure decision</span>
-            </div>
+          {/* Description */}
+          <p className="max-w-2xl text-md leading-relaxed text-white/90">
+            {isAccepted
+              ? "Your title has successfully passed all AI, similarity, and regulatory verification checks."
+              : "Your title could not be approved because it closely matches an existing registered title under verification rules."}
+          </p>
+
+          {/* Footer Hint */}
+          <div className="mt-1 flex items-center gap-3 text-sm text-white/80">
+            <span className="inline-block rounded-full bg-white/20 px-4 py-1 font-semibold">
+              AI Verified
+            </span>
+            <span>Policy compliant • Secure decision</span>
           </div>
         </div>
+      </div>
 
 
         {/* Probability Card */}
@@ -146,7 +164,7 @@ const Result = () => {
               AI Similarity Score
             </h3>
             <p className="text-5xl font-extrabold text-indigo-600">
-              {result.similarity}%
+              {result.similarity ? `${result.similarity}%` : "-"}
             </p>
             <p className="mt-2 text-sm text-slate-500">
               (Lower is better)
@@ -159,7 +177,7 @@ const Result = () => {
             </h3>
 
             <div className={`mt-4 p-4 rounded-xl  ${!isAccepted ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"} text-sm`}>
-              <strong className="block mt-1">{result.message}</strong>  
+              <strong className="block mt-1">{result.message || "-"}</strong>  
             </div>
             
           </div>
@@ -172,13 +190,88 @@ const Result = () => {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <Detail label="Title Name" value={result.titleName} />
+            <Detail label="Title Name" value={result.titleName || "-"} />
             <Detail label="Hindi Title" value={result.hindiTitle || '-'} />
-            <Detail label="Publication" value={result.publicationName} />
-            <Detail label="State" value={result.state} />
-            <Detail label="Periodicity" value={result.periodity} />
+            <Detail label="Publication" value={result.publicationName || "-"} />
+            <Detail label="State" value={result.state || "-"} />
+            <Detail label="Periodicity" value={result.periodity || "-"} />
           </div>
         </div>
+
+        {/* AI Suggestions (Only for Rejected Titles) */}
+        {!isAccepted && result.suggestions?.length > 0 && (
+          <div className="mt-10 relative overflow-hidden rounded-3xl
+                          bg-slate-50
+                          border border-slate-200 shadow-lg p-8">
+
+            <div className="relative">
+
+              {/* Header */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-12 w-12 rounded-xl
+                                bg-indigo-600
+                                flex items-center justify-center text-white text-xl">
+                  💡
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">
+                    AI Suggestions for Improvement
+                  </h3>
+                  <p className="text-sm text-slate-600">
+                    Recommended changes to improve approval probability.
+                  </p>
+                </div>
+              </div>
+
+              {/* Suggestions List */}
+              <div className="space-y-4">
+                {result.suggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="group flex items-start gap-4
+                              rounded-2xl bg-white
+                              border border-slate-200 p-5
+                              hover:border-indigo-300 hover:shadow-md
+                              transition-all duration-200"
+                  >
+                    {/* Step */}
+                    <div className="flex h-9 w-9 shrink-0
+                                    items-center justify-center
+                                    rounded-lg bg-slate-200 text-slate-700
+                                    font-semibold">
+                      {index + 1}
+                    </div>
+
+                    {/* Text */}
+                    <div>
+                      <p className="font-semibold text-slate-800">
+                        {suggestion}
+                      </p>
+
+                      <p className="mt-2 text-xs text-slate-500">
+                        Suggested Adjustment •
+                        Helps reduce similarity and improve uniqueness
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className="mt-6 flex items-center gap-3 text-sm text-slate-600">
+                <span className="inline-block rounded-full bg-indigo-50 px-3 py-1
+                                text-indigo-700 font-semibold">
+                  AI-Assisted Guidance
+                </span>
+                <span>
+                  Suggestions are advisory, not mandatory.
+                </span>
+              </div>
+
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">

@@ -48,7 +48,6 @@ const VerifyTitle = () => {
   const startVerification = async () => {
     setLoading(true);
     try {
-      toast.success("Title verification initiated successfully");
       const response = await axios.post(`${apiurl}/titles/`, formData, { withCredentials: true });
 
       console.log(response)

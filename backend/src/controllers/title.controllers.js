@@ -10,81 +10,251 @@ import {
   similarityScore,
 } from "../utils/similarity.js";
 
-const addTitle = async (req, res) => {
-  const {
-    titleCode,
-    titleName,
-    hindiTitle,
-    publicationName,
-    periodity,
-    ownerName,
-    state,
-  } = req.body;
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { QdrantVectorStore } from "@langchain/qdrant";
+import {Document} from "@langchain/core/documents";
+import { UUID } from "mongodb";
 
+import "dotenv/config"
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
+
+const addTitle = async (req, res) => {
+  try {
+    const {
+      titleCode,
+      titleName,
+      hindiTitle,
+      publicationName,
+      periodity,
+      ownerName,
+      state,
+    } = req.body;
+  
+    const normalized = normalizeTitle(titleName);
+  
     // Basic validation
-    if (!titleName?.trim()) {
+    if (!normalized) {
       return res.status(400).json({ message: "Title name is required" });
     }
-
+  
     // Business rule validation
-    if (hasDisallowedPrefix(titleName))
+    if (hasDisallowedPrefix(normalized))
       return res.status(400).json({ message: "Disallowed prefix" });
-
-    if (hasDisallowedSuffix(titleName))
+  
+    if (hasDisallowedSuffix(normalized))
       return res.status(400).json({ message: "Disallowed suffix" });
-
-    if (containsDisallowedWord(titleName))
+  
+    if (containsDisallowedWord(normalized))
       return res.status(400).json({ message: "Contains disallowed word" });
-
-    if (containsPeriodicity(titleName))
+  
+    if (containsPeriodicity(normalized))
       return res.status(400).json({ message: "Contains disallowed periodicity" });
-
+  
     // Preprocessing
-    const normalized = normalizeTitle(titleName);
-    const { soundex, metaphone } = getPhoneticCodes(titleName);
+    const { soundex, metaphone } = getPhoneticCodes(normalized);
+  
+    // Save minimal title (NO similarity here)
+    const newTitle = await Title.create({
+      titleCode,
+      titleName,
+      hindiTitle,
+      ownerName,
+      state,
+      periodity,
+      publicationName,
+      normalized,
+      soundex,
+      metaphone,
+      createdBy: req.user.id,
+      embedded: false
+    });
+  
+    console.log("New Title Created: ", newTitle);
+  
+    // AI generated response setup
+    
+    const embeddings = new OpenAIEmbeddings({
+      model: "text-embedding-3-large"
+    });
+    
+    // AI similarity search
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
+      url: process.env.QDRANT_URL,
+      collectionName: "ai-title-verify",
+    });
+  
+    const vectorSearcher = vectorStore.asRetriever({
+      k: 10,
+    })
 
-  // Save minimal title (NO similarity here)
-  const newTitle = await Title.create({
-    titleCode,
-    titleName,
-    hindiTitle,
-    ownerName,
-    state,
-    periodity,
-    publicationName,
-    normalized,
-    soundex,
-    metaphone,
-    createdBy: req.user.id,
+    const relevantChunk = await vectorSearcher.invoke(newTitle.normalized);
 
-    // temporary values
-    verified: false,
-    similarity: 0,
-    verificationProbability: 0,
-  });
+    console.log("Similar Titles: ", relevantChunk)
 
-  const updatedTitle = await updateSimilarityForTitleAndRelated(newTitle._id);
+    const fetchedSimilarTitles = relevantChunk.map((doc) => ({
+      id: doc.metadata.id,
+      normalized: doc.pageContent,
+      titleName: doc.metadata.titleName,
+      verified: doc.metadata.verified,
+      soundex: doc.metadata.soundex,
+      metaphone: doc.metadata.metaphone,
+      point_id: doc.id
+    }));
+    
 
-  console.log(updatedTitle)
+    const SYSTEM_PROMPT = `You are an automated Title Verification Agent for the Press Registrar General of India (PRGI).
 
-  return res.status(200).json({
-    title: {
-      id: updatedTitle._id,
-      titleCode: updatedTitle.titleCode,
-       message: updatedTitle.verified         //TODO: use AI generated message
-        ? "Title verified successfully"
-        : "Title rejected due to similarity",
-      titleName: updatedTitle.titleName,
-      hindiTitle: updatedTitle.hindiTitle,
-      ownerName: updatedTitle.ownerName,
-      state: updatedTitle.state,
-      publicationName: updatedTitle.publicationName,
-      periodity: updatedTitle.periodity,
-      verified: updatedTitle.verified,
-      similarity: updatedTitle.similarity,
-      verificationProbability: updatedTitle.verificationProbability,
-    },
-  });
+    Your task is to decide whether a newly submitted title should be VERIFIED or REJECTED
+    by strictly comparing it against PROVIDED CONTEXT titles provided to you.
+
+    You MUST operate as a deterministic rule-based verifier.
+    Personal judgment, subjective opinions, or assumptions are NOT allowed.
+
+    You will receive structured input containing:
+    - title_to_verify (string)
+    
+
+    You MUST use ONLY this provided data.
+    You MUST NOT ask the user for additional information.
+
+
+    1. Similarity Evaluation (PRIMARY)
+    - Similarity scores range from 1 to 10:
+      1–3  = Low similarity (distinct)
+      4–5  = Moderate similarity
+      6–10 = High similarity (confusing / duplicate)
+
+    - Similarity must consider:
+      a) Phonetic similarity (Soundex / Metaphone)
+      b) Semantic similarity (meaning, intent, naming confusion)
+
+    2. Decision Rules (NON-NEGOTIABLE)
+
+    - If ANY similar title has similarity score ≥ 6:
+      → verified MUST be false
+      → AcceptabilityScore MUST be ≤ 4
+
+    - If ALL similarity scores ≤ 4:
+      → The title MUST be considered distinct
+      → verified MUST be true
+      → AcceptabilityScore MUST be ≥ 6
+
+    - Low similarity AND low acceptability is INVALID.
+    - High similarity AND verified=true is INVALID.
+
+    3. Acceptability Score (1–10)
+    - AcceptabilityScore represents likelihood of approval.
+    - It MUST be mathematically consistent with similarity.
+    - AcceptabilityScore = 10 − (maximum similarity score).
+
+    4. Disallowed Logic (STRICT)
+    Even if similarity is low, verified MUST be false if:
+    - The title is a combination of two existing titles
+    - The title is an existing title with added periodicity
+    - The title is a translated or synonymous version of an existing title
+    - The title violates naming guidelines implied by similarity data
+
+    ────────────────────────────────
+    OUTPUT RULES (STRICT ENFORCEMENT)
+    ────────────────────────────────
+    - Output MUST be valid JSON only
+    - No extra text, no markdown
+    - No explanations outside JSON
+    - All numeric fields MUST follow the rules above
+
+    ────────────────────────────────
+    OUTPUT FORMAT (EXACT)
+    ────────────────────────────────
+    {
+      "verified": true | false,
+      "reason": "Explain your decision briefly based on similarity findings.",
+      "similarTitlesConsidered": [
+        {
+          "titleName": "Existing title name",
+          "score": 1–10 (for each similar title)
+        }
+      ],
+      "suggestions": ["If rejected, suggest up to 3 alternative distinct titles."],
+      "AcceptabilityScore": 1–10
+    }
+
+    PROVIDED CONTEXT FOR SIMILARITY CHECK:
+    Title to verify: "${JSON.stringify(fetchedSimilarTitles, null, 2)}"
+    `
+
+    const response = await client.chat.completions.create({
+      model: 'gpt-4.1',
+      messages: [
+        {role: 'system', content: SYSTEM_PROMPT},
+        {role: 'user', content: `Verify the title: "${newTitle.normalized}" strictly based on the provided context.`}
+      ],
+      
+    })
+
+    console.log(response.choices[0].message.content);
+
+    const result = JSON.parse(response.choices[0].message.content);
+
+    newTitle.verified = result.verified
+    newTitle.verificationProbability = result.AcceptabilityScore * 10
+    newTitle.similarity = 100 - newTitle.verificationProbability
+    newTitle.aiVerifyReason = result.reason
+
+    const newDocument = [
+      new Document({
+        pageContent: newTitle.normalized.toString(),
+        
+        metadata: {
+          id: newTitle._id.toString(),
+          verified: newTitle.verified.toString(),
+          titleCode: newTitle.titleCode.toString(),
+          titleName: newTitle.titleName.toString(),
+          soundex: newTitle.soundex.toString(),
+          metaphone: newTitle.metaphone.toString(),
+          verificationProbability: newTitle.verificationProbability.toString(),
+          similarity: newTitle.similarity.toString()
+        },
+        id: new UUID().toString(),
+      })
+    ]
+
+    console.log(newDocument)
+
+    if(newTitle.verified){
+      await vectorStore.addDocuments(newDocument);
+      newTitle.embedded = true;
+      newTitle.point_id = newDocument[0].id;
+      console.log("Document added to vectore store")
+    }
+    await newTitle.save();
+  
+    return res.status(200).json({
+      title: {
+        id: newTitle._id,
+        titleCode: newTitle.titleCode,
+        message: newTitle.aiVerifyReason,
+        titleName: newTitle.titleName,
+        hindiTitle: newTitle.hindiTitle,
+        ownerName: newTitle.ownerName,
+        state: newTitle.state,
+        publicationName: newTitle.publicationName,
+        periodity: newTitle.periodity,
+        verified: newTitle.verified,
+        similarity: newTitle.similarity,
+        verificationProbability: newTitle.verificationProbability,
+        embedded: newTitle.embedded,
+        suggestions: result?.suggestions,
+        similarTitlesConsidered: result.similarTitlesConsidered
+      },
+    });
+  } catch (error) {
+    console.error("Error in createTitle:", error);
+    return res.status(500).json({ message: error.message || "Internal server error" });
+  }
 };
 
 const updateTitle = async (req, res) => {
@@ -173,7 +343,6 @@ const updateTitle = async (req, res) => {
     },
     { new: true }
   );
-  await updateSimilarityForTitleAndRelated(updatedTitle._id);
 
   res.json({
     message: "Title updated successfully",
@@ -205,7 +374,7 @@ const deleteTitle = async (req, res) => {
     if (!existingTitle) {
       return res.status(404).json({ message: "Title not found" });
     }
-
+    console.log("Existing Title: ", existingTitle);
     const isOwner = existingTitle.createdBy.toString() === req.user.id;
 
     const isAdmin = req.user.role === "admin";
@@ -217,12 +386,24 @@ const deleteTitle = async (req, res) => {
     }
 
     await Title.findByIdAndDelete(req.params.id);
-    const anyTitle = await Title.findOne();
-    if (anyTitle) {
-      await updateSimilarityForTitleAndRelated(anyTitle._id);
-    }
+    console.log("Title deleted from DB");
 
-    res.json({ message: "Title deleted and scores updated" });
+    const embeddings = new OpenAIEmbeddings({
+      model: "text-embedding-3-large"
+    });
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
+      url: process.env.QDRANT_URL,
+      collectionName: "ai-title-verify",
+    });
+
+    if(existingTitle.embedded && !existingTitle?.point_id){
+      await vectorStore.delete({
+        ids: [existingTitle.point_id.toString()]
+      });
+    }
+    console.log("Vector embeddings deleted")
+
+    res.json({ message: "Title deleted successfully" });
   } catch (error) {
     res
       .status(500)

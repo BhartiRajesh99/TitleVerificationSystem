@@ -3,17 +3,10 @@ import { soundex } from "soundex-code";
 import stringSimilarity from "string-similarity";
 import fuzzy from "fuzzy";
 
-const disallowedPrefixes = ["The", "India", "Samachar", "News"];
-const disallowedSuffixes = ["News", "Samachar", "Express"];
-const disallowedWords = ["Police", "Crime", "Corruption", "CBI", "CID", "Army"];
-const periodicities = [
-  "daily",
-  "weekly",
-  "monthly",
-  "fortnightly",
-  "evening",
-  "morning",
-];
+const disallowedPrefixes = ["official", "government", "national", "central", "ministry of", "department of", "prime minister", "president", "certified", "authorized"];
+const disallowedSuffixes = ["gov", "govt", "india", "bharat", "authority", "board", "commission", "scheme", "yojana", "portal" ];
+const disallowedWords = ["criminal", "terrorist", "traitor", "fraudster", "scammer", "corrupt", "rapist", "molester", "anti-national", "extremist"];
+const periodicities = ["daily", "weekly", "monthly", "fortnightly", "evening", "morning"];
 
 function normalizeTitle(title) {
   return title

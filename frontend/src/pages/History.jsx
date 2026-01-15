@@ -188,16 +188,16 @@ const History = () => {
               ) : (
                 titles.map(item => (
                   <tr key={item.id} className="border-t hover:bg-indigo-50/40">
-                    <td className="px-6 py-4 font-semibold text-indigo-600">{item.titleCode}</td>
-                    <td className="px-6 py-4">{item.titleName}</td>
-                    <td className="px-6 py-4">{item.state}</td>
-                    <td className="px-6 py-4">{item.periodity}</td>
-                    <td className="px-6 py-4 font-semibold">{item.verificationProbability}%</td>
+                    <td className="px-6 py-4 font-semibold text-indigo-600">{item.titleCode || "--"}</td>
+                    <td className="px-6 py-4">{item.titleName || "--"}</td>
+                    <td className="px-6 py-4">{item.state || "--"}</td>
+                    <td className="px-6 py-4">{item.periodity || "--"}</td>
+                    <td className="px-6 py-4 font-semibold">{item.verificationProbability ? `${item.verificationProbability}%` : "--"}</td>
                     <td className="px-6 py-4">
                       <StatusBadge status={item.verified ? "ACCEPTED" : "REJECTED"} />
                     </td>
                     <td className="px-6 py-4 text-slate-500">
-                      {item.createdAt.split("T")[0]}
+                      {item.createdAt.split("T")[0] || "--"}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button

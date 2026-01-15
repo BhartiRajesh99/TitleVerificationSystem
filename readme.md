@@ -61,6 +61,7 @@ The Title Verification System provides:
 - Fuzzy string comparison
 - Phonetic algorithms
 - Confidence-based verification logic
+- Give suggestions for rejection titles
 
 ### 🎨 User Interface
 - Responsive and modern UI

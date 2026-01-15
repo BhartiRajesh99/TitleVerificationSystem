@@ -33,11 +33,9 @@ const TitleSchema = new mongoose.Schema(
     },
     verified: {
       type: Boolean,
-      required: true,
-      default: false,
+      
       index: true,
     },
-    // Verification fields
     normalized: {
       type: String,
       required: true,
@@ -55,13 +53,25 @@ const TitleSchema = new mongoose.Schema(
     },
     similarity: {
       type: Number,
-      default: 0,
       index: true,
     },
     verificationProbability: {
       type: Number,
-      default: 100,
       index: true,
+    },
+    message: {
+      type: String,
+      default: "",
+      index: true,
+    },
+    embedded: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    point_id: {
+      type: String,
+      defalut: "",
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
