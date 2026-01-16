@@ -3,9 +3,9 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import { apiUrl } from "../constants/apiURL";
 
 const AdminDashboard = () => {
-  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
   const navigate = useNavigate();
   // states
   const [stats, setStats] = useState(null);
@@ -24,12 +24,12 @@ const AdminDashboard = () => {
     setDashboardLoading(true);
 
     const results = await Promise.allSettled([
-      axios.get(`${apiurl}/admin/stats`, { withCredentials: true }),
-      axios.get(`${apiurl}/admin/today-requests`, { withCredentials: true }),
-      axios.get(`${apiurl}/admin/rejection-insights`, { withCredentials: true }),
-      axios.get(`${apiurl}/admin/probability-breakdown`, { withCredentials: true }),
-      axios.get(`${apiurl}/admin/top-states`, { withCredentials: true }),
-      axios.get(`${apiurl}/admin/recent-submissions`, { withCredentials: true })
+      axios.get(`${apiUrl}/admin/stats`, { withCredentials: true }),
+      axios.get(`${apiUrl}/admin/today-requests`, { withCredentials: true }),
+      axios.get(`${apiUrl}/admin/rejection-insights`, { withCredentials: true }),
+      axios.get(`${apiUrl}/admin/probability-breakdown`, { withCredentials: true }),
+      axios.get(`${apiUrl}/admin/top-states`, { withCredentials: true }),
+      axios.get(`${apiUrl}/admin/recent-submissions`, { withCredentials: true })
     ]);
 
     const [
@@ -68,7 +68,7 @@ const AdminDashboard = () => {
       // find deleted item before deleting
       const deletedItem = recentSubmissions.find(item => item._id === id);
 
-      const response = await axios.delete(`${apiurl}/admin/delete-title/${id}`, {
+      const response = await axios.delete(`${apiUrl}/admin/delete-title/${id}`, {
         withCredentials: true
       });
 

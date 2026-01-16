@@ -7,8 +7,7 @@ import {
 } from "react";
 import axios from "../api/axios.js";
 import toast from "react-hot-toast";
-
-const apiurl = import.meta.env.VITE_API_URL;
+import { apiUrl } from "../constants/apiURL.js";
 
 const AuthContext = createContext();
 
@@ -21,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   // Check auth on app load
   const checkAuth = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${apiurl}/auth/check-auth`, {
+      const { data } = await axios.get(`${apiUrl}/auth/check-auth`, {
         withCredentials: true,
       });
 
@@ -45,7 +44,7 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (userData) => {
     try {
       const { data } = await axios.post(
-        `${apiurl}/auth/login`,
+        `${apiUrl}/auth/login`,
         userData,
         { withCredentials: true }
       );
@@ -68,10 +67,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 🚪 Logout
+  // Logout
   const logout = useCallback(async () => {
     try {
-      await axios.post(`${apiurl}/auth/logout`, {}, { withCredentials: true });
+      await axios.post(`${apiUrl}/auth/logout`, {}, { withCredentials: true });
       toast.success("Logout Successful");
     } catch (error) {
       toast.error(

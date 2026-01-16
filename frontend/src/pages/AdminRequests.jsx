@@ -10,7 +10,7 @@ import { toast } from "react-hot-toast"
 import { useEffect } from "react";
 import AdminRequestsSkeleton from "../components/AdminRequestSkeleton";
 import { useRequests } from "../context/RequestsContext";
-
+import { apiUrl } from "../constants/apiURL";
 
 const statusStyles = {
   pending: "bg-amber-100 text-amber-700",
@@ -24,11 +24,10 @@ const AdminRequests = () => {
   const [requests, setRequests] = React.useState([])
   const { setPendingCount } = useRequests();
 
-  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${apiurl}/admin/requests`, {withCredentials: true})
+      const res = await axios.get(`${apiUrl}/admin/requests`, {withCredentials: true})
       console.log(res.data.requests)
       setRequests(res.data.requests)
     } catch (error) {
@@ -42,9 +41,9 @@ const AdminRequests = () => {
   const updateStatus = async (id, status) => {
     try {
       setLoading(true)
-      const response = await axios.patch(`${apiurl}/admin/requests/${id}`, {status}, {withCredentials: true})
+      const response = await axios.patch(`${apiUrl}/admin/requests/${id}`, {status}, {withCredentials: true})
       console.log(response.data)
-      const pendingRequests = await axios.get(`${apiurl}/admin/requests/pending/count`, {withCredentials: true})
+      const pendingRequests = await axios.get(`${apiUrl}/admin/requests/pending/count`, {withCredentials: true})
       setPendingCount(pendingRequests.data?.count)
       toast.success(`Request ${status}`)
       fetchRequests();

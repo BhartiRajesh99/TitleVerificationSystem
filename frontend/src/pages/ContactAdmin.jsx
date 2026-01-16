@@ -3,6 +3,7 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import { apiUrl } from "../constants/apiURL";
 
 const ContactAdmin = () => {
   const navigate = useNavigate();
@@ -13,9 +14,8 @@ const ContactAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
     try {
-      await axios.post(`${apiurl}/requests`, {
+      await axios.post(`${apiUrl}/requests`, {
         name,
         email,
         organization,

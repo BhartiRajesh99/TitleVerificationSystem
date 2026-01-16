@@ -8,6 +8,7 @@ import {
 import axios from "axios";
 import toast from "react-hot-toast";
 import UserRequestsSkeleton from "../components/UserRequestSkeleton";
+import { apiUrl } from "../constants/apiURL";
 
 const statusConfig = {
   pending: {
@@ -32,11 +33,10 @@ const UserRequests = () => {
   const [loading, setLoading] = useState(true);
 
 
-  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const res = await axios.get(`${apiurl}/requests/my-requests`, {
+        const res = await axios.get(`${apiUrl}/requests/my-requests`, {
             withCredentials: true,
         });
         const data = res.data.requests

@@ -2,9 +2,9 @@ import axios from "axios";
 import { useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { apiUrl } from "../constants/apiURL";
 
 const History = () => {
-  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
   const [searchCode, setSearchCode] = useState("");
   const [selectedState, setSelectedState] = useState("All States");
@@ -33,7 +33,7 @@ const History = () => {
   const getAllUserTitles = async () => {
     setPageLoading(true);
     try {
-      const res = await axios.get(`${apiurl}/titles/all`, { withCredentials: true });
+      const res = await axios.get(`${apiUrl}/titles/all`, { withCredentials: true });
       setAllTitles(res.data.results);
       setTitles(res.data.results);
     } catch (error) {
@@ -49,7 +49,7 @@ const History = () => {
     try {
       setTableLoading(true);
 
-      await axios.delete(`${apiurl}/titles/${id}`, { withCredentials: true });
+      await axios.delete(`${apiUrl}/titles/${id}`, { withCredentials: true });
       toast.success("Title deleted");
 
       setAllTitles(prev => prev.filter(t => t.id !== id));

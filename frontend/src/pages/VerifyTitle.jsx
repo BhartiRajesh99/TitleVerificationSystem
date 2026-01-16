@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import {useLocation, useNavigate} from "react-router-dom";
 import Loader from "../components/Loader";
+import { apiUrl } from "../constants/apiURL";
 
 const VerifyTitle = () => {
   const [loading, setLoading] = useState(false);
@@ -51,12 +52,11 @@ const VerifyTitle = () => {
     })
   }, [title, hindiTitle, publicationName, periodity, ownerName, state]);
 
-  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
   const startVerification = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${apiurl}/titles/`, formData, { withCredentials: true });
+      const response = await axios.post(`${apiUrl}/titles/`, formData, { withCredentials: true });
 
       console.log(response)
 

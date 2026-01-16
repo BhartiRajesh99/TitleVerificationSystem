@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRequests } from "../context/RequestsContext";
+import { apiUrl } from "../constants/apiURL";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -12,13 +13,12 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { pendingCount, setPendingCount } = useRequests();
 
-  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
   useEffect(() => {
     if (role !== "admin") return;
 
     const fetchRequestCount = async () => {
       try {
-        const res = await axios.get(`${apiurl}/admin/requests/pending/count`,{ withCredentials: true});
+        const res = await axios.get(`${apiUrl}/admin/requests/pending/count`,{ withCredentials: true});
 
         const data = res.data;
         setPendingCount(data.count);
