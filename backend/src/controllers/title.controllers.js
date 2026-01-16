@@ -7,7 +7,6 @@ import {
   containsDisallowedWord,
   containsPeriodicity,
   getPhoneticCodes,
-  similarityScore,
 } from "../utils/similarity.js";
 
 import { OpenAIEmbeddings } from "@langchain/openai";
@@ -257,116 +256,6 @@ const addTitle = async (req, res) => {
   }
 };
 
-const updateTitle = async (req, res) => {
-  const {
-    titleCode,
-    titleName,
-    hindiTitle,
-    ownerName,
-    state,
-    periodity,
-    verified,
-  } = req.body;
-
-  if (!titleName) {
-    return res.status(400).json({ message: "Title name is required" });
-  }
-
-  // Check if title exists
-  const existingTitle = await Title.findById(req.params.id);
-  if (!existingTitle) {
-    return res.status(404).json({ message: "Title not found" });
-  }
-
-  // Check if user owns this title
-  if (existingTitle.createdBy.toString() !== req.user.id) {
-    return res
-      .status(403)
-      .json({ message: "Not authorized to update this title" });
-  }
-
-  const normalized = normalizeTitle(titleName);
-
-  // Disallowed checks
-  if (hasDisallowedPrefix(titleName))
-    return res.status(400).json({ message: "Disallowed prefix" });
-  if (hasDisallowedSuffix(titleName))
-    return res.status(400).json({ message: "Disallowed suffix" });
-  if (containsDisallowedWord(titleName))
-    return res.status(400).json({ message: "Contains disallowed word" });
-  if (containsPeriodicity(titleName))
-    return res.status(400).json({ message: "Contains disallowed periodicity" });
-
-  const { soundex, metaphone } = getPhoneticCodes(titleName);
-
-  // Check similarity against other titles (excluding current title)
-  const otherTitles = await Title.find({ _id: { $ne: req.params.id } });
-  let maxSim = 0;
-  let mostSimilarTitle = null;
-
-  for (let t of otherTitles) {
-    const sim = similarityScore(normalized, t.normalized);
-    if (sim > maxSim) {
-      maxSim = sim;
-      mostSimilarTitle = t;
-    }
-    // Reject if too similar (above 50% threshold)
-    if (sim > 0.5) {
-      return res.status(400).json({
-        message: `Title too similar to existing: ${t.titleName}`,
-        similarity: Math.round(sim * 100),
-        verificationProbability: 100 - Math.round(sim * 100),
-        mostSimilarTo: t.titleName,
-      });
-    }
-  }
-
-  // Update title
-  const updatedTitle = await Title.findByIdAndUpdate(
-    req.params.id,
-    {
-      titleCode,
-      titleName,
-      hindiTitle,
-      registerSerialNo,
-      regnNo,
-      ownerName,
-      state,
-      publicationCity,
-      periodity,
-      verified,
-      normalized,
-      soundex,
-      metaphone,
-      similarity: Math.round(maxSim * 100),
-      verificationProbability: 100 - Math.round(maxSim * 100),
-    },
-    { new: true }
-  );
-
-  res.json({
-    message: "Title updated successfully",
-    title: {
-      id: updatedTitle._id,
-      titleCode: updatedTitle.titleCode,
-      titleName: updatedTitle.titleName,
-      hindiTitle: updatedTitle.hindiTitle,
-      registerSerialNo: updatedTitle.registerSerialNo,
-      regnNo: updatedTitle.regnNo,
-      ownerName: updatedTitle.ownerName,
-      state: updatedTitle.state,
-      publicationCity: updatedTitle.publicationCity,
-      periodity: updatedTitle.periodity,
-      verified: updatedTitle.verified,
-      similarity: updatedTitle.similarity,
-      verificationProbability: updatedTitle.verificationProbability,
-    },
-    similarity: Math.round(maxSim * 100),
-    verificationProbability: 100 - Math.round(maxSim * 100),
-    mostSimilarTo: mostSimilarTitle ? mostSimilarTitle.titleName : "None",
-  });
-};
-
 const deleteTitle = async (req, res) => {
   try {
     // Check if title exists
@@ -478,7 +367,6 @@ const getTitleByFilter = async (req, res) => {
   }
 };
 
-//TODO: Pagination in frontend
 const getAllTitles = async (req, res) => {
   try {
     const {
@@ -531,52 +419,8 @@ const getAllTitles = async (req, res) => {
   }
 };
 
-// Helper: Find and update similarity for a single title and its closest match
-const updateSimilarityForTitleAndRelated = async (titleId) => {
-  const newTitle = await Title.findById(titleId);
-  if (!newTitle) return null;
-
-  const others = await Title.find({ _id: { $ne: titleId } });
-
-  let maxSim = 0;
-  const bulkUpdates = [];
-
-  for (const other of others) {
-    const sim = Math.round(
-      similarityScore(newTitle.normalized, other.normalized) * 100
-    );
-
-    if (sim > maxSim) maxSim = sim;
-
-    if (sim > (other.similarity || 0)) {
-      bulkUpdates.push({
-        updateOne: {
-          filter: { _id: other._id },
-          update: {
-            similarity: sim,
-            verificationProbability: 100 - sim,
-          },
-        },
-      });
-    }
-  }
-
-  newTitle.similarity = maxSim;
-  newTitle.verificationProbability = 100 - maxSim;
-  newTitle.verified = maxSim <= 40;
-
-  await newTitle.save();
-
-  if (bulkUpdates.length) {
-    await Title.bulkWrite(bulkUpdates);
-  }
-
-  return newTitle; // IMPORTANT
-};
-
 export {
   addTitle,
-  updateTitle,
   deleteTitle,
   getAllTitles,
   getTitleByFilter,

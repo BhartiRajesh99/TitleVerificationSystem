@@ -1,58 +1,69 @@
-import { useNavigate } from "react-router-dom";
+import { ExclamationTriangleIcon, HomeIcon } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router";
 
 const NotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="mt-17 flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center
+                    bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 px-4">
       <div className="max-w-lg w-full text-center
                       bg-white/70 backdrop-blur-xl
                       border border-slate-200
                       rounded-3xl shadow-2xl p-10">
 
-        {/* 404 Icon */}
-        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center
-                        rounded-full bg-indigo-100 text-indigo-600 text-5xl">
-          🚫
+        {/* Icon */}
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center
+                        rounded-full bg-amber-100 text-amber-600">
+          <ExclamationTriangleIcon className="h-10 w-10" />
         </div>
 
-        {/* Title */}
-        <h1 className="text-4xl font-extrabold text-slate-800 mb-2">
+        {/* Code */}
+        <h1 className="text-6xl font-extrabold tracking-tight text-slate-900">
           404
         </h1>
 
-        <h2 className="text-xl font-semibold text-slate-700 mb-4">
+        {/* Title */}
+        <h2 className="mt-3 text-2xl font-bold text-slate-800">
           Page Not Found
         </h2>
 
         {/* Description */}
-        <p className="text-slate-600 mb-8 leading-relaxed">
-          Oops! The page you are looking for doesn’t exist or may have been moved.
-          Let’s get you back on track.
+        <p className="mt-4 text-sm text-slate-600 leading-relaxed">
+          The page you are trying to access does not exist or may have been
+          moved as part of system updates.
+          <br />
+          Please verify the URL or return to a valid section of the platform.
         </p>
+
+        {/* Divider */}
+        <div className="my-6 h-px bg-slate-200" />
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 rounded-xl
-                       bg-indigo-600 hover:bg-indigo-700
-                       text-white font-semibold
-                       shadow-lg transition"
-          >
-            Go to Home
+            className="flex items-center cursor-pointer justify-center gap-2
+                       px-6 py-3 rounded-xl font-semibold
+                       bg-slate-900 text-white
+                       hover:bg-slate-800 transition">
+            <HomeIcon className="h-5 w-5" />
+            Home
           </button>
 
           <button
-            onClick={() => navigate(-1)}
-            className="px-6 py-3 rounded-xl
-                       bg-slate-100 hover:bg-slate-200
-                       text-slate-700 font-semibold
-                       transition"
-          >
-            Go Back
+            onClick={() => navigate("/verify")}
+            className="px-6 py-3 cursor-pointer rounded-xl font-semibold
+                       border border-slate-300 text-slate-700
+                       hover:bg-slate-100 transition">
+            Verify Title
           </button>
         </div>
+
+        {/* Footer note */}
+        <p className="mt-6 text-xs text-slate-500">
+          Error Code: <span className="font-mono">SYS-404</span>
+        </p>
       </div>
     </div>
   );

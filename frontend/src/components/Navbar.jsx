@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Menu, X, LogOut, LogIn } from "lucide-react";
 import { useState } from "react";
+import AdminRequests from "../pages/AdminRequests";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -53,7 +54,8 @@ const Navbar = () => {
               <NavItem to="/verify">Verify</NavItem>
               <NavItem to="/history">History</NavItem>
 
-              {role === "admin" && <NavItem to="/admin">Dashboard</NavItem>}
+              {role === "admin" ? <NavItem to="/admin">Dashboard</NavItem> : <NavItem to="/contact">Contact Admin</NavItem>}
+              {role === "admin" && <NavItem to="/admin-requests">Requests</NavItem>}
 
               {/* User */}
               <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-semibold">

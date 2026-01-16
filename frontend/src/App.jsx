@@ -12,6 +12,9 @@ import Signup from "./pages/Signup";
 import PublicRoute from "./routes/PublicRoute";
 import NotFound from "./components/NotFound";
 import MainLayout from "./layout/MainLayout";
+import ContactAdmin from "./pages/ContactAdmin";
+import RestrictedRegistration from "./pages/RestrictedRegistration";
+import AdminRequests from "./pages/AdminRequests";
 
 function App() {
   return (
@@ -38,6 +41,22 @@ function App() {
             <PublicRoute>
               <Signup />
             </PublicRoute>
+          }
+        />
+        <Route 
+          path="/restricted-registration"
+          element={
+            <PublicRoute>
+              <RestrictedRegistration />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <MainLayout>
+              <ContactAdmin />
+            </MainLayout>
           }
         />
 
@@ -82,6 +101,17 @@ function App() {
             <ProtectedRoute allowedRoles={["admin"]}> 
               <MainLayout>
                 <AdminDashboard />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin-requests"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}> 
+              <MainLayout>
+                <AdminRequests />
               </MainLayout>
             </ProtectedRoute>
           }

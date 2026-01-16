@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 const Login = () => {
   const { login } = useAuth();
@@ -48,7 +48,19 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-slate-100 px-4">
       <div className="w-full max-w-sm backdrop-blur-xl bg-white/70 border border-slate-200 rounded-3xl shadow-xl px-7 py-6">
-
+        <button
+          onClick={() => navigate("/")}
+          className="absolute cursor-pointer top-8 left-5
+                    flex h-9 w-9 items-center justify-center
+                    rounded-full border border-slate-200
+                    bg-white/80 backdrop-blur
+                    text-slate-600
+                    hover:bg-slate-100 hover:text-slate-900
+                    transition"
+          title="Go to Home"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+        </button>
         <h1 className="text-2xl font-extrabold text-center mb-1">
           Welcome Back
         </h1>

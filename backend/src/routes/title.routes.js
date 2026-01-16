@@ -7,7 +7,6 @@ const router = express.Router();
 import {
   getTitleByFilter,
   addTitle,
-  updateTitle,
   deleteTitle,
   getAllTitles,
 } from "../controllers/title.controllers.js";
@@ -19,9 +18,6 @@ router.route("/search").get(getTitleByFilter);
 
 // Add Title (with all checks)
 router.route("/").post(addTitle);
-
-// Update Title
-router.route("/:id").put(updateTitle);
 
 // Delete Title
 router.route("/:id").delete(deleteTitle);

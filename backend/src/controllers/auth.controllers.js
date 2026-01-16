@@ -8,6 +8,12 @@ const registerUser = async (req, res) => {
 
     const { name, email, password, role } = req.body;
 
+    // restrict account creation logic
+    const usersCount = await User.countDocuments()
+    if(usersCount >= 2){
+      return res.status(400).json({restricted: true,message: "User registration is currently restricted."});
+    }
+
     // Validate input
     if (!email || !password || !name || !role) {
       return res.status(400).json({

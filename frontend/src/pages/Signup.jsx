@@ -2,7 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -34,6 +35,8 @@ const Signup = () => {
     } catch (err) {
       setError(err.response.data.message || "Registration failed. Please try again.");
       toast.error("Registration failed. Try again.");
+      if(err.response.data?.restricted || false)
+        navigate("/restricted-registration");
     } finally {
       setLoading(false);
     }
@@ -42,7 +45,19 @@ const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-indigo-100 px-4">
       <div className="w-full max-w-sm backdrop-blur-xl bg-white/70 border border-slate-200 rounded-3xl shadow-xl px-7 py-6">
-
+        <button
+          onClick={() => navigate("/")}
+          className="absolute cursor-pointer top-8 left-5
+                    flex h-9 w-9 items-center justify-center
+                    rounded-full border border-slate-200
+                    bg-white/80 backdrop-blur
+                    text-slate-600
+                    hover:bg-slate-100 hover:text-slate-900
+                    transition"
+          title="Go to Home"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+        </button>
         <h1 className="text-2xl font-extrabold text-center mb-1">
           Create Account
         </h1>
