@@ -154,7 +154,7 @@ const Input = ({ label, name, type = "text", onChange }) => {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="
-              absolute inset-y-0 right-3 flex items-center
+              absolute inset-y-0 cursor-pointer right-3 flex items-center
               text-slate-400 hover:text-indigo-600
               transition
             "

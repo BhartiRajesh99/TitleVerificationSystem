@@ -9,6 +9,8 @@ import axios from "axios"
 import { toast } from "react-hot-toast"
 import { useEffect } from "react";
 import AdminRequestsSkeleton from "../components/AdminRequestSkeleton";
+import { useRequests } from "../context/RequestsContext";
+
 
 const statusStyles = {
   pending: "bg-amber-100 text-amber-700",
@@ -20,6 +22,7 @@ const AdminRequests = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(false);
   const [requests, setRequests] = React.useState([])
+  const { setPendingCount } = useRequests();
 
   const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
   const fetchRequests = async () => {
@@ -36,26 +39,17 @@ const AdminRequests = () => {
     }
   }
 
-  const handleApprove = async (id) => {
+  const updateStatus = async (id, status) => {
     try {
-      const response = await axios.patch(`${apiurl}/admin/requests/${id}`, {status: "approved"}, {withCredentials: true})
+      const response = await axios.patch(`${apiurl}/admin/requests/${id}`, {status}, {withCredentials: true})
       console.log(response.data)
+      const pendingRequests = await axios.get(`${apiurl}/admin/requests/pending/count`, {withCredentials: true})
+      setPendingCount(pendingRequests.data?.count)
       toast.success("Request approved")
       fetchRequests();
     } catch (error) {
       console.log("Error approving request:", error)
       toast.error( error?.response?.data?.message || "Failed to approve request")
-    }
-  }
-  const handleReject = async (id) => {
-    try {
-      const response = await axios.patch(`${apiurl}/admin/requests/${id}`, {status: "rejected"}, {withCredentials: true})
-      console.log(response.data)
-      toast.success("Request rejected")
-      fetchRequests();
-    } catch (error) {
-      console.log("Error rejecting request:", error)
-      toast.error( error?.response?.data?.message || "Failed to reject request")
     }
   }
 
@@ -168,14 +162,18 @@ const AdminRequests = () => {
                         <>
                           <button
                             title="Approve"
-                            onClick={() => handleApprove(req._id)}
+                            onClick={() => {
+                              updateStatus(req._id, "approved")
+                            }}
                             className="rounded-lg cursor-pointer border border-green-200 p-2 text-green-600 hover:bg-green-50">
                             <CheckCircleIcon className="h-5 w-5" />
                           </button>
 
                           <button
                             title="Reject"
-                            onClick={() => handleReject(req._id)}
+                            onClick={() => {
+                              updateStatus(req._id, "rejected")
+                            }}
                             className="rounded-lg cursor-pointer border border-red-200 p-2 text-red-600 hover:bg-red-50">
                             <XCircleIcon className="h-5 w-5" />
                           </button>

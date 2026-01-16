@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 const Signup = () => {
@@ -141,7 +141,7 @@ const Input = ({ label, name, type = "text", onChange }) => {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="
-              absolute inset-y-0 right-3 flex items-center
+              absolute inset-y-0 cursor-pointer right-3 flex items-center
               text-slate-400 hover:text-indigo-600
               transition
             "

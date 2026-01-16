@@ -14,6 +14,7 @@ const getAllRequests = async (req, res) => {
 const updateRequestStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    console.log("STATUS:",status)
   
     if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
@@ -38,4 +39,18 @@ const updateRequestStatus = async (req, res) => {
   }
 }
 
-export { getAllRequests, updateRequestStatus };
+const getPendingRequestsCount = async (req, res) => {
+  try {
+    const count = await AccessRequest.countDocuments({
+      status: "pending",
+    });
+
+    return res.status(200).json({message: "Pending requests count fetched successfully", count });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
+
+export { getAllRequests, updateRequestStatus, getPendingRequestsCount };
