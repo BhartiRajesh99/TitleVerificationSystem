@@ -15,6 +15,7 @@ import MainLayout from "./layout/MainLayout";
 import ContactAdmin from "./pages/ContactAdmin";
 import RestrictedRegistration from "./pages/RestrictedRegistration";
 import AdminRequests from "./pages/AdminRequests";
+import UserRequests from "./pages/UserRequests";
 
 function App() {
   return (
@@ -51,16 +52,18 @@ function App() {
             </PublicRoute>
           }
         />
+
+        {/* User routes */}
         <Route
           path="/contact"
           element={
-            <MainLayout>
-              <ContactAdmin />
-            </MainLayout>
+            <ProtectedRoute allowedRoles={["user"]}>
+              <MainLayout>
+                <ContactAdmin />
+              </MainLayout>
+            </ProtectedRoute>
           }
         />
-
-        {/* User routes */}
         <Route
           path="/verify"
           element={
@@ -94,6 +97,18 @@ function App() {
           }
         />
 
+        <Route
+          path="/my-requests"
+          element={
+            <ProtectedRoute allowedRoles={["user"]}>
+              <MainLayout>
+                <UserRequests />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+
         {/* Admin only */}
         <Route
           path="/admin"
@@ -120,9 +135,7 @@ function App() {
          <Route 
           path="*" 
           element={
-            <MainLayout>
-              <NotFound />
-            </MainLayout>
+            <NotFound />
           } 
         />
       </Routes>

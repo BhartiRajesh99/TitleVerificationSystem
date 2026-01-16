@@ -1,8 +1,34 @@
 import { EnvelopeIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
+import axios from "axios";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 
 const ContactAdmin = () => {
   const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    try {
+      await axios.post(`${apiurl}/requests`, {
+        name,
+        email,
+        organization,
+        message,
+      },
+      { withCredentials: true });
+      toast.success("Your request has been submitted successfully.");
+      navigate(-1);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to submit your request. Please try again later.");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center
@@ -45,7 +71,7 @@ const ContactAdmin = () => {
         </div>
 
         {/* Form */}
-        <form className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Full Name
@@ -53,6 +79,8 @@ const ContactAdmin = () => {
             <input
               type="text"
               required
+              value={name}
+              onChange={e => setName(e.target.value)}
               placeholder="Enter your full name"
               className="w-full text-sm rounded-xl border border-slate-300
                          px-3 py-3 text-slate-700
@@ -67,6 +95,8 @@ const ContactAdmin = () => {
             <input
               type="email"
               required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               placeholder="name@organization.gov.in"
               className="w-full text-sm rounded-xl border border-slate-300
                          px-4 py-3 text-slate-700
@@ -81,6 +111,8 @@ const ContactAdmin = () => {
             <input
               type="text"
               required
+              value={organization}
+              onChange={e => setOrganization(e.target.value)}
               placeholder="Department or Authority Name"
               className="w-full text-sm rounded-xl border border-slate-300
                          px-4 py-3 text-slate-700
@@ -95,6 +127,8 @@ const ContactAdmin = () => {
             <textarea
               rows={3}
               required
+              value={message}
+              onChange={e => setMessage(e.target.value)}
               placeholder="Describe your request or issue in detail"
               className="w-full text-sm rounded-xl border border-slate-300
                          px-4 py-3 text-slate-700
@@ -114,7 +148,7 @@ const ContactAdmin = () => {
 
             <button
               type="button"
-              onClick={() => navigate("/restricted-registration")}
+              onClick={() => navigate(-1)}
               className="flex-1 text-sm cursor-pointer rounded-xl border border-slate-300 px-5 py-3
                          font-semibold text-slate-700
                          hover:bg-slate-100 transition">

@@ -53,9 +53,8 @@ const Navbar = () => {
               <NavItem to="/">Home</NavItem>
               <NavItem to="/verify">Verify</NavItem>
               <NavItem to="/history">History</NavItem>
-
-              {role === "admin" ? <NavItem to="/admin">Dashboard</NavItem> : <NavItem to="/contact">Contact Admin</NavItem>}
-              {role === "admin" && <NavItem to="/admin-requests">Requests</NavItem>}
+              <NavItem to={role === "admin" ? "/admin-requests" : "/my-requests"}>Requests</NavItem>
+              <NavItem to={role === "admin" ? "/admin" : "/contact"}>{role === "admin" ? "Admin Dashboard" : "Contact Admin"}</NavItem>
 
               {/* User */}
               <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-semibold">

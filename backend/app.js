@@ -42,13 +42,17 @@ app.use(cookieParser());
 import authRoutes from "./src/routes/auth.routes.js";
 import titleRoutes from "./src/routes/title.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
+import userRequestRoutes from "./src/routes/userRequest.routes.js";
+import adminRequestRoutes from "./src/routes/adminRequest.routes.js";
 
 //use admin routes
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/requests", adminRequestRoutes);
 
 //use routes
 app.use("/api/auth", authRoutes);
 app.use("/api/titles", titleRoutes);
+app.use("/api/requests", userRequestRoutes);
 
 
 // Error handling middleware

@@ -52,15 +52,15 @@ const RestrictedRegistration = () => {
             className="px-6 py-3 text-sm cursor-pointer rounded-xl font-semibold
                        bg-slate-900 text-white
                        hover:bg-slate-800 transition">
-            Go Back Home
+            Home
           </button>
 
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => navigate(-1)}
             className="px-6 cursor-pointer text-sm py-3 rounded-xl font-semibold
                        border border-slate-300 text-slate-700
                        hover:bg-slate-100 transition">
-            Contact Admin
+            Go Back
           </button>
         </div>
       </div>

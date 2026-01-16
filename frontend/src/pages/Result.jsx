@@ -10,7 +10,7 @@ const Result = () => {
 
   if (!state) {
     return (
-      <div className="min-h-[60vh] mt-20 flex items-center justify-center px-4">
+      <div className="min-h-[76vh] flex items-center justify-center px-4 bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="max-w-md w-full text-center 
                         bg-white/70 backdrop-blur-xl
                         border border-slate-200
@@ -37,7 +37,7 @@ const Result = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate("/verify")}
-              className="px-6 py-3 rounded-xl
+              className="px-6 py-3 cursor-pointer rounded-xl
                         bg-indigo-600 hover:bg-indigo-700
                         text-white font-semibold
                         shadow-md transition"
@@ -48,7 +48,7 @@ const Result = () => {
             <button
               onClick={() => navigate("/")}
               className="px-6 py-3 rounded-xl
-                        bg-slate-100 hover:bg-slate-200
+                        bg-slate-100 cursor-pointer hover:bg-slate-200
                         text-slate-700 font-semibold
                         transition"
             >

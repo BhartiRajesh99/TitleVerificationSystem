@@ -4,27 +4,11 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-
-const mockRequests = [
-  {
-    id: "REQ-1023",
-    name: "Raj Kumar",
-    email: "raj@gov.in",
-    organization: "Ministry of Education",
-    message: "Requesting access for title verification testing.",
-    status: "pending",
-    date: "16 Jan 2026",
-  },
-  {
-    id: "REQ-1022",
-    name: "Anita Sharma",
-    email: "anita@nic.in",
-    organization: "NIC",
-    message: "Unable to register due to restricted policy.",
-    status: "approved",
-    date: "15 Jan 2026",
-  },
-];
+import React from "react";
+import axios from "axios"
+import { toast } from "react-hot-toast"
+import { useEffect } from "react";
+import AdminRequestsSkeleton from "../components/AdminRequestSkeleton";
 
 const statusStyles = {
   pending: "bg-amber-100 text-amber-700",
@@ -34,16 +18,75 @@ const statusStyles = {
 
 const AdminRequests = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = React.useState(false);
+  const [requests, setRequests] = React.useState([])
+
+  const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${apiurl}/admin/requests`, {withCredentials: true})
+      console.log(res.data.requests)
+      setRequests(res.data.requests)
+    } catch (error) {
+      console.log("Error fetching requests:", error)
+      toast.error( error?.response?.data?.message || "Failed to fetch requests")
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleApprove = async (id) => {
+    try {
+      const response = await axios.patch(`${apiurl}/admin/requests/${id}`, {status: "approved"}, {withCredentials: true})
+      console.log(response.data)
+      toast.success("Request approved")
+      fetchRequests();
+    } catch (error) {
+      console.log("Error approving request:", error)
+      toast.error( error?.response?.data?.message || "Failed to approve request")
+    }
+  }
+  const handleReject = async (id) => {
+    try {
+      const response = await axios.patch(`${apiurl}/admin/requests/${id}`, {status: "rejected"}, {withCredentials: true})
+      console.log(response.data)
+      toast.success("Request rejected")
+      fetchRequests();
+    } catch (error) {
+      console.log("Error rejecting request:", error)
+      toast.error( error?.response?.data?.message || "Failed to reject request")
+    }
+  }
+
+  useEffect(() => {
+    fetchRequests();
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 px-6 py-8">
+        <h1 className="text-3xl font-extrabold text-slate-900">
+          Access Requests
+        </h1>
+        <p className="mt-1 mb-8 text-sm text-slate-600">
+          Requests submitted via Contact Admin form
+        </p>
+        <AdminRequestsSkeleton />
+      </div>
+    );
+  }
+
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10">
+    <div className="min-h-screen bg-slate-50 px-6 py-8">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">
             Access Requests
           </h1>
-          <p className="mt-1 text-slate-600">
+          <p className="mt-1 text-sm text-slate-600">
             Requests submitted via Contact Admin form
           </p>
         </div>
@@ -58,7 +101,7 @@ const AdminRequests = () => {
       </div>
 
       {/* Empty State */}
-      {mockRequests.length === 0 ? (
+      {requests.length === 0 ? (
         <div className="flex flex-col items-center justify-center
                         rounded-2xl border border-dashed border-slate-300
                         bg-white p-12 text-center">
@@ -83,12 +126,11 @@ const AdminRequests = () => {
             </thead>
 
             <tbody className="divide-y divide-slate-200 text-sm">
-              {mockRequests.map((req) => (
-                <tr key={req.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-mono text-xs">
-                    {req.id}
-                  </td>
-
+              {requests.map((req) => (
+                <tr key={req._id} className="hover:bg-slate-50">
+                  <td className="px-4 py-3 text-slate-600 font-mono text-sm">
+                    {req._id.substring(0,8)}
+                  </td >
                   <td className="px-4 py-3">
                     <div className="font-semibold text-slate-800">
                       {req.name}
@@ -117,26 +159,38 @@ const AdminRequests = () => {
                   </td>
 
                   <td className="px-4 py-3 text-slate-500">
-                    {req.date}
+                    {req.createdAt.split("T")[0]}
                   </td>
 
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
-                      <button
-                        title="Approve"
-                        className="rounded-lg border border-green-200
-                                   p-2 text-green-600
-                                   hover:bg-green-50">
-                        <CheckCircleIcon className="h-5 w-5" />
-                      </button>
+                      {req.status === "pending" ? (
+                        <>
+                          <button
+                            title="Approve"
+                            onClick={() => handleApprove(req._id)}
+                            className="rounded-lg cursor-pointer border border-green-200 p-2 text-green-600 hover:bg-green-50">
+                            <CheckCircleIcon className="h-5 w-5" />
+                          </button>
 
-                      <button
-                        title="Reject"
-                        className="rounded-lg border border-red-200
-                                   p-2 text-red-600
-                                   hover:bg-red-50">
-                        <XCircleIcon className="h-5 w-5" />
-                      </button>
+                          <button
+                            title="Reject"
+                            onClick={() => handleReject(req._id)}
+                            className="rounded-lg cursor-pointer border border-red-200 p-2 text-red-600 hover:bg-red-50">
+                            <XCircleIcon className="h-5 w-5" />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          title={req.status === "approved" ? "Approved" : "Rejected"}
+                          className="rounded-lg border border-green-200 p-2 text-green-600 hover:bg-green-50">
+                            {req.status === "approved" ? (
+                              <CheckCircleIcon className="h-5 w-5" />
+                            ) : (
+                              <XCircleIcon className="h-5 w-5" />
+                            )}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

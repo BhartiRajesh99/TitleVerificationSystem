@@ -126,7 +126,7 @@ const AdminDashboard = () => {
             : (
               <>
                 <StatCard title="Total Titles" value={stats?.total ?? "—"} />
-                <StatCard title="Today's Requests" value={todayRequests ?? "—"} accent="blue" />
+                <StatCard title="Today's Titles Verified" value={todayRequests ?? "—"} accent="blue" />
                 <StatCard title="Approved Titles" value={stats?.approved ?? "—"} accent="green" />
                 <StatCard title="Rejected Titles" value={stats?.rejected ?? "—"} accent="red" />
               </>
