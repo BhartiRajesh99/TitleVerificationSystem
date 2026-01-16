@@ -192,7 +192,7 @@ const History = () => {
                     <td className="px-6 py-4">{item.titleName || "--"}</td>
                     <td className="px-6 py-4">{item.state || "--"}</td>
                     <td className="px-6 py-4">{item.periodity || "--"}</td>
-                    <td className="px-6 py-4 font-semibold">{item.verificationProbability ? `${item.verificationProbability}%` : "--"}</td>
+                    <td className="px-6 py-4 font-semibold">{item.verificationProbability}%</td>
                     <td className="px-6 py-4">
                       <StatusBadge status={item.verified ? "ACCEPTED" : "REJECTED"} />
                     </td>
