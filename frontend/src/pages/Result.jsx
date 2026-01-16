@@ -1,12 +1,16 @@
 import { useLocation, useNavigate } from "react-router";
 import Loader from "../components/Loader";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
-
+import {useAuth} from "../context/AuthContext"
+import { useState } from "react";
 
 const Result = () => {
 
   const {state} = useLocation()
   const navigate = useNavigate()
+  const {user} = useAuth()
+  
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
   if (!state) {
     return (
@@ -66,6 +70,7 @@ const Result = () => {
 
   const {data: result} = state || {};
   const isAccepted = result.verified;
+
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-10">
@@ -177,7 +182,7 @@ const Result = () => {
             </h3>
 
             <div className={`mt-4 p-4 rounded-xl  ${!isAccepted ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"} text-sm`}>
-              <strong className="block mt-1">{result.message || "-"}</strong>  
+              <strong className="block mt-1">{result.message || "Our AI-driven verification system has identified this title as already verified in the PGRI dataset. Duplicate verification is not required."}</strong>  
             </div>
             
           </div>
@@ -226,37 +231,65 @@ const Result = () => {
 
               {/* Suggestions List */}
               <div className="space-y-4">
-                {result.suggestions.map((suggestion, index) => (
-                  <div
-                    key={index}
-                    className="group flex items-start gap-4
-                              rounded-2xl bg-white
-                              border border-slate-200 p-5
-                              hover:border-indigo-300 hover:shadow-md
-                              transition-all duration-200"
-                  >
-                    {/* Step */}
-                    <div className="flex h-9 w-9 shrink-0
-                                    items-center justify-center
-                                    rounded-lg bg-slate-200 text-slate-700
-                                    font-semibold">
-                      {index + 1}
-                    </div>
+                {result.suggestions.map((suggestion, index) => {
+                  const isSelected = selectedSuggestion === suggestion;
 
-                    {/* Text */}
-                    <div>
-                      <p className="font-semibold text-slate-800">
-                        {suggestion}
-                      </p>
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedSuggestion(suggestion)}
+                      className={`
+                        group cursor-pointer flex items-start gap-4
+                        rounded-2xl p-5 transition-all duration-200
+                        border
+                        ${
+                          isSelected
+                            ? "border-indigo-500 bg-indigo-50 shadow-md"
+                            : "border-slate-200 bg-white hover:border-indigo-300 hover:shadow-sm"
+                        }
+                      `}
+                    >
+                      {/* Step */}
+                      <div
+                        className={`
+                          flex h-9 w-9 shrink-0 items-center justify-center
+                          rounded-lg font-semibold
+                          ${
+                            isSelected
+                              ? "bg-indigo-600 text-white"
+                              : "bg-slate-200 text-slate-700"
+                          }
+                        `}
+                      >
+                        {index + 1}
+                      </div>
 
-                      <p className="mt-2 text-xs text-slate-500">
-                        Suggested Adjustment •
-                        Helps reduce similarity and improve uniqueness
-                      </p>
+                      {/* Text */}
+                      <div className="flex-1">
+                        <p
+                          className={`font-semibold ${
+                            isSelected ? "text-indigo-800" : "text-slate-800"
+                          }`}
+                        >
+                          {suggestion}
+                        </p>
+
+                        <p className="mt-2 text-xs text-slate-500">
+                          Suggested Adjustment • Helps reduce similarity and improve uniqueness
+                        </p>
+                      </div>
+
+                      {/* Selected Indicator */}
+                      {isSelected && (
+                        <div className="text-indigo-600 font-semibold text-sm">
+                          ✓ Selected
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+
 
               {/* Footer */}
               <div className="mt-6 flex items-center gap-3 text-sm text-slate-600">
@@ -275,60 +308,55 @@ const Result = () => {
 
         {/* Actions */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-          {!isAccepted && (
-            <div className="flex flex-col items-center justify-center">
-              <button
-                onClick={() => navigate("/verify")}
-                className="
-                  relative group overflow-hidden cursor-pointer
-                  px-12 py-4 rounded-2xl
-                  text-lg font-semibold text-white
-                  bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600
-                  shadow-[0_20px_40px_rgba(79,70,229,0.35)]
-                  transition-all duration-300 ease-out
-                  hover:scale-[1.03] hover:shadow-[0_30px_60px_rgba(79,70,229,0.45)]
-                  active:scale-[0.97]
-                "
-              >
-                {/* Glow layer */}
-                <span
-                  className="
-                    absolute inset-0
-                    bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500
-                    opacity-0 group-hover:opacity-20
-                    blur-2xl transition-opacity duration-300
-                  "
-                />
+          {!isAccepted && user._id === result.createdBy && (
+            <button
+              disabled={!selectedSuggestion}
+              onClick={() =>
+                navigate("/verify", {
+                  state: {
+                    prefillData: {
+                      ...result,
+                      suggestedTitle: selectedSuggestion,
+                    },
+                  },
+                })
+              }
+              className={`
+                relative group overflow-hidden
+                px-12 py-4 rounded-2xl text-lg font-semibold
+                transition-all duration-300 ease-out
+                ${
+                  selectedSuggestion
+                    ? "cursor-pointer text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 shadow-[0_20px_40px_rgba(79,70,229,0.35)] hover:scale-[1.03]"
+                    : "cursor-not-allowed bg-slate-300 text-slate-500"
+                }
+              `}
+            >
+              {/* Glow */}
+              {selectedSuggestion && (
+                <span className="absolute inset-0 bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 blur-2xl transition-opacity" />
+              )}
 
-                {/* Shine animation */}
-                <span
-                  className="
-                    absolute inset-0
-                    -translate-x-full group-hover:translate-x-full
-                    bg-gradient-to-r from-transparent via-white/30 to-transparent
-                    transition-transform duration-700
-                  "
-                />
-
-                {/* Text */}
-                <span className="relative z-10 flex items-center gap-2">
-                  Modify & Resubmit
+              {/* Text */}
+              <span className="relative z-10 flex items-center gap-2">
+                Modify & Resubmit
+                {selectedSuggestion && (
                   <span className="transition-transform duration-300 group-hover:translate-x-1">
                     →
                   </span>
-                </span>
-              </button>
-            </div>
-
+                )}
+              </span>
+            </button>
           )}
 
           <button
-            onClick={() => (navigate("/"))}
+            onClick={() => navigate(-1)}
             className="px-10 py-3 rounded-2xl bg-white border border-slate-300 hover:bg-slate-100 font-semibold"
           >
-            Back to Home
+            Go Back
           </button>
         </div>
+
 
       </div>
     </div>

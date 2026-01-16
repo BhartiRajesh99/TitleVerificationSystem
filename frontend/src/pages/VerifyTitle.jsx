@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import Loader from "../components/Loader";
 
 const VerifyTitle = () => {
@@ -24,6 +24,14 @@ const VerifyTitle = () => {
   });
 
   const navigate = useNavigate();
+  const { state: locationState } = useLocation();
+
+  const prefilledTitle = locationState?.prefillData?.suggestedTitle || "";
+  const prefilledHindiTitle = locationState?.prefillData?.hindiTitle || "";
+  const prefilledState = locationState?.prefillData?.state || "";
+  const prefilledPublicationName = locationState?.prefillData?.publicationName || "";
+  const prefilledPeriodity = locationState?.prefillData?.periodity || "";
+  const prefilledOwnerName = locationState?.prefillData?.ownerName || "";
 
   const generateTitleCode = () => {
     const year = new Date().getFullYear();
@@ -134,15 +142,15 @@ const VerifyTitle = () => {
           <div className="lg:col-span-3 backdrop-blur-xl bg-white/70 border border-slate-200 rounded-3xl shadow-xl p-10">
 
             <FormSection title="Title Details">
-              <Input label="Title Name" value={title} required={true} onChange={(e) => setTitle(e.target.value)} placeholder="English title" />
-              <Input label="Hindi Title" value={hindiTitle} onChange={(e) => setHindiTitle(e.target.value)} placeholder="हिंदी शीर्षक" />
-              <Input label="Publication Name" value={publicationName} onChange={(e) => setPublicationName(e.target.value)} />
-              <Select label="Periodicity" value={periodity} required={true} onChange={(e) => setPeriodity(e.target.value)} options={["Daily", "Weekly", "Monthly"]} />
+              <Input label="Title Name" value={title || prefilledTitle} required={true} onChange={(e) => setTitle(e.target.value)} placeholder="English title" />
+              <Input label="Hindi Title" value={hindiTitle || prefilledHindiTitle} onChange={(e) => setHindiTitle(e.target.value)} placeholder="हिंदी शीर्षक" />
+              <Input label="Publication Name" value={publicationName || prefilledPublicationName} onChange={(e) => setPublicationName(e.target.value)} />
+              <Select label="Periodicity" value={periodity || prefilledPeriodity} required={true} onChange={(e) => setPeriodity(e.target.value)} options={["Daily", "Weekly", "Monthly"]} />
             </FormSection>
 
             <FormSection title="Applicant Information">
-              <Input label="Owner Name" value={ownerName} required={true} onChange={(e) => setOwnerName(e.target.value)} />
-              <Select label="State" value={state} required={true} onChange={(e) => setState(e.target.value)} options={states} />
+              <Input label="Owner Name" value={ownerName || prefilledOwnerName} required={true} onChange={(e) => setOwnerName(e.target.value)} />
+              <Select label="State" value={state || prefilledState} required={true} onChange={(e) => setState(e.target.value)} options={states} />
             </FormSection>
 
           </div>

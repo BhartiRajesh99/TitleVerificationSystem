@@ -201,7 +201,8 @@ const addTitle = async (req, res) => {
     newTitle.verified = result.verified
     newTitle.verificationProbability = result.AcceptabilityScore * 10
     newTitle.similarity = 100 - newTitle.verificationProbability
-    newTitle.aiVerifyReason = result.reason
+    newTitle.message = result.reason
+    newTitle.suggestions = result.suggestions || []
 
     const newDocument = [
       new Document({
@@ -247,7 +248,8 @@ const addTitle = async (req, res) => {
         verificationProbability: newTitle.verificationProbability,
         embedded: newTitle.embedded,
         suggestions: result?.suggestions,
-        similarTitlesConsidered: result.similarTitlesConsidered
+        similarTitlesConsidered: result.similarTitlesConsidered,
+        createdBy: newTitle.createdBy
       },
     });
   } catch (error) {

@@ -1,11 +1,12 @@
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const AdminDashboard = () => {
   const apiurl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
+  const navigate = useNavigate();
   // states
   const [stats, setStats] = useState(null);
   const [todayRequests, setTodayRequests] = useState(null);
@@ -165,11 +166,11 @@ const AdminDashboard = () => {
 
         {/* TABLE */}
         <h2 className="text-2xl font-bold text-center mb-6">Recent Title Submissions</h2>
-        <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl shadow overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-xl border border-slate-200 rounded-3xl shadow overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-100 text-slate-600">
               <tr>
-                {["ID", "Title", "State", "Periodicity", "Acceptability", "Status", "Date", "Action"].map(h => (
+                {["ID", "Title", "State", "Acceptability", "Status", "Date", "See Results", "Action"].map(h => (
                   <th key={h} className="px-6 py-4 text-left">{h}</th>
                 ))}
               </tr>
@@ -180,12 +181,12 @@ const AdminDashboard = () => {
                   <td className="px-5 py-3 font-semibold text-indigo-600">{item.titleCode || "--"}</td>
                   <td className="px-5 py-3">{item.titleName || "--"}</td>
                   <td className="px-5 py-3">{item.state || "--"}</td>
-                  <td className="px-6 py-4">{item.periodity || "--"}</td>
                   <td className="px-5 py-3 font-semibold">{item.verificationProbability ? `${item.verificationProbability}%` : "--"}</td>
                   <td className="px-5 py-3"><StatusBadge status={item.verified} /></td>
                   <td className="px-6 py-4 text-slate-500">
                     {item.createdAt.split("T")[0] || "--"}
                   </td>
+                  <td className="px-6 py-4 flex justify-center item-center text-slate-600 "><EyeIcon onClick={() => navigate("/result", { state: { data: item } })} className="h-5 w-5 cursor-pointer hover:text-emerald-600" /></td>
                   <td className="px-5 py-3">
                     <button
                       onClick={() => handleDelete(item._id)}

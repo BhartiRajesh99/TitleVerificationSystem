@@ -64,6 +64,10 @@ const TitleSchema = new mongoose.Schema(
       default: "",
       index: true,
     },
+    suggestions: {
+      type: [String],
+      default: [],
+    },
     embedded: {
       type: Boolean,
       default: false,
