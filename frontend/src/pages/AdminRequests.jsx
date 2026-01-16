@@ -181,7 +181,7 @@ const AdminRequests = () => {
                       ) : (
                         <button
                           title={req.status === "approved" ? "Approved" : "Rejected"}
-                          className="rounded-lg border border-green-200 p-2 text-green-600 hover:bg-green-50">
+                          className={`rounded-lg border ${req.status === "approved" ? "border-green-200 p-2 text-green-600 hover:bg-green-50" : "border-red-200 p-2 text-red-600 hover:bg-red-50" }`}>
                             {req.status === "approved" ? (
                               <CheckCircleIcon className="h-5 w-5" />
                             ) : (
