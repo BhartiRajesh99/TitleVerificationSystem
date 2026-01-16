@@ -41,6 +41,7 @@ const AdminRequests = () => {
 
   const updateStatus = async (id, status) => {
     try {
+      setLoading(true)
       const response = await axios.patch(`${apiurl}/admin/requests/${id}`, {status}, {withCredentials: true})
       console.log(response.data)
       const pendingRequests = await axios.get(`${apiurl}/admin/requests/pending/count`, {withCredentials: true})
@@ -50,6 +51,8 @@ const AdminRequests = () => {
     } catch (error) {
       console.log("Error approving request:", error)
       toast.error( error?.response?.data?.message || "Failed to approve request")
+    } finally {
+      setLoading(false)
     }
   }
 
