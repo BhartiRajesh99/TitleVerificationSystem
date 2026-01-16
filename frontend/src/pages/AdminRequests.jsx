@@ -45,7 +45,7 @@ const AdminRequests = () => {
       console.log(response.data)
       const pendingRequests = await axios.get(`${apiurl}/admin/requests/pending/count`, {withCredentials: true})
       setPendingCount(pendingRequests.data?.count)
-      toast.success("Request approved")
+      toast.success(`Request ${status}`)
       fetchRequests();
     } catch (error) {
       console.log("Error approving request:", error)
