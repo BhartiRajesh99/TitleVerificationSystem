@@ -5,14 +5,15 @@ import toast from "react-hot-toast";
 import {useLocation, useNavigate} from "react-router-dom";
 import Loader from "../components/Loader";
 import { apiUrl } from "../constants/apiURL";
+import { useAuth } from "../context/AuthContext";
 
 const VerifyTitle = () => {
+  const {user} = useAuth()
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [hindiTitle, setHindiTitle] = useState("");
   const [publicationName, setPublicationName] = useState("");
   const [periodity, setPeriodity] = useState("");
-  const [ownerName, setOwnerName] = useState("");
   const [state, setState] = useState("");
   const [formData, setFormData] = useState({
     titleCode: "",
@@ -20,7 +21,7 @@ const VerifyTitle = () => {
     hindiTitle: "",
     publicationName: "",
     periodity: "",
-    ownerName: "",
+    ownerName: user.name,
     state: "",
   });
 
@@ -47,10 +48,10 @@ const VerifyTitle = () => {
       hindiTitle,
       publicationName,
       periodity,
-      ownerName,
+      ownerName: user.name,
       state,
     })
-  }, [title, hindiTitle, publicationName, periodity, ownerName, state]);
+  }, [title, hindiTitle, publicationName, periodity, state]);
 
 
   const startVerification = async () => {
@@ -60,7 +61,7 @@ const VerifyTitle = () => {
 
       console.log(response)
 
-      navigate("/result", { state: { data: response.data.title, loading } });
+      navigate("/result", { state: { data: {...response.data.title, role: user.role}, loading } });
 
     } catch (error) {
       console.log(error);
@@ -149,7 +150,7 @@ const VerifyTitle = () => {
             </FormSection>
 
             <FormSection title="Applicant Information">
-              <Input label="Owner Name" value={ownerName || prefilledOwnerName} required={true} onChange={(e) => setOwnerName(e.target.value)} />
+              <Input label="Owner Name" disabled={true} value={user.name || prefilledOwnerName} required={true} onChange={e => e} />
               <Select label="State" value={state || prefilledState} required={true} onChange={(e) => setState(e.target.value)} options={states} />
             </FormSection>
 
@@ -245,7 +246,7 @@ const FormSection = ({ title, children }) => (
   </>
 );
 
-const Input = ({ label, value, required=false, onChange, placeholder }) => (
+const Input = ({ label, disabled=false, value, required=false, onChange, placeholder }) => (
   <div>
     <label className="block text-sm font-medium text-slate-700 mb-1">
       {label}
@@ -253,9 +254,10 @@ const Input = ({ label, value, required=false, onChange, placeholder }) => (
     <input
       required={required}
       value={value}
+      disabled={disabled}
       onChange={onChange}
       placeholder={placeholder}
-      className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 focus:ring-2 focus:ring-indigo-500"
+      className={`w-full px-4 py-3 ${disabled && "cursor-not-allowed text-slate-500"} rounded-xl bg-white border border-slate-300 focus:ring-2 focus:ring-indigo-500`}
     />
   </div>
 );

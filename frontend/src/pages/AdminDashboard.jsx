@@ -126,10 +126,10 @@ const AdminDashboard = () => {
             ? Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
             : (
               <>
-                <StatCard title="Total Titles" value={stats?.total ?? "—"} />
-                <StatCard title="Today's Titles Verified" value={todayRequests ?? "—"} accent="blue" />
-                <StatCard title="Approved Titles" value={stats?.approved ?? "—"} accent="green" />
-                <StatCard title="Rejected Titles" value={stats?.rejected ?? "—"} accent="red" />
+                <StatCard title="Total Titles" value={stats?.total} />
+                <StatCard title="Today's Titles Verified" value={todayRequests} accent="blue" />
+                <StatCard title="Approved Titles" value={stats?.approved} accent="green" />
+                <StatCard title="Rejected Titles" value={stats?.rejected} accent="red" />
               </>
             )}
         </div>
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
                   <td className="px-5 py-3 font-semibold text-indigo-600">{item.titleCode || "--"}</td>
                   <td className="px-5 py-3">{item.titleName || "--"}</td>
                   <td className="px-5 py-3">{item.state || "--"}</td>
-                  <td className="px-5 py-3 font-semibold">{item.verificationProbability ? `${item.verificationProbability}%` : "--"}</td>
+                  <td className="px-5 py-3 font-semibold">{`${item.verificationProbability}%`}</td>
                   <td className="px-5 py-3"><StatusBadge status={item.verified} /></td>
                   <td className="px-6 py-4 text-slate-500">
                     {item.createdAt.split("T")[0] || "--"}
@@ -229,15 +229,15 @@ const StatCard = ({ title, value, accent }) => (
 const InsightRow = ({ label, value }) => (
   <div className="flex justify-between text-sm mb-3">
     <span className="text-slate-600">{label}</span>
-    <span className="font-semibold">{value || "--"}</span>
+    <span className="font-semibold">{value}</span>
   </div>
 );
 
 const ProbabilityBar = ({ label, value }) => (
   <div className="mb-4">
     <div className="flex justify-between text-xs mb-1">
-      <span>{label ? `${label}%` : "--"}</span>
-      <span>{value ? `${value}%` : "--"}</span>
+      <span>{label}</span>
+      <span>{value }</span>
     </div>
     <div className="h-2 rounded-full bg-slate-200">
       <div className="h-2 rounded-full bg-indigo-600" style={{ width: `${value ? value : 0}%` }} />

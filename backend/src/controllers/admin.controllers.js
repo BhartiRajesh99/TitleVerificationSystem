@@ -224,10 +224,36 @@ const getTopStatesBySubmissions = async (req, res) => {
 
 const getRecentSubmissions = async (req, res) => {
   try {
-    const submissions = await Title.find({})
-      .sort({ createdAt: -1 })   // latest first
-      .limit(10)
-      
+    const submissions = await Title.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "users",        
+          localField: "createdBy",  
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $addFields: {
+          role: "$userDetails.role"
+        }
+      },
+      {
+        $project: {
+          userDetails: 0
+        }
+      }
+    ]);
+
+    console.log(submissions[0])
 
     return res.status(200).json({
       success: true,

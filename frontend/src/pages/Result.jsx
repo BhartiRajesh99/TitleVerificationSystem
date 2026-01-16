@@ -200,6 +200,7 @@ const Result = () => {
             <Detail label="Publication" value={result.publicationName || "-"} />
             <Detail label="State" value={result.state || "-"} />
             <Detail label="Periodicity" value={result.periodity || "-"} />
+            <Detail label="Submitted By" value={`${result.ownerName} • ${result.role.toUpperCase()}` || "-"} />
           </div>
         </div>
 
@@ -243,7 +244,7 @@ const Result = () => {
                         rounded-2xl p-5 transition-all duration-200
                         border
                         ${
-                          isSelected
+                          isSelected && user._id === result.createdBy
                             ? "border-indigo-500 bg-indigo-50 shadow-md"
                             : "border-slate-200 bg-white hover:border-indigo-300 hover:shadow-sm"
                         }
@@ -255,7 +256,7 @@ const Result = () => {
                           flex h-9 w-9 shrink-0 items-center justify-center
                           rounded-lg font-semibold
                           ${
-                            isSelected
+                            isSelected && user._id === result.createdBy
                               ? "bg-indigo-600 text-white"
                               : "bg-slate-200 text-slate-700"
                           }
@@ -268,7 +269,7 @@ const Result = () => {
                       <div className="flex-1">
                         <p
                           className={`font-semibold ${
-                            isSelected ? "text-indigo-800" : "text-slate-800"
+                            isSelected && user._id === result.createdBy ? "text-indigo-800" : "text-slate-800"
                           }`}
                         >
                           {suggestion}
@@ -280,7 +281,7 @@ const Result = () => {
                       </div>
 
                       {/* Selected Indicator */}
-                      {isSelected && (
+                      {isSelected && user._id === result.createdBy && (
                         <div className="text-indigo-600 font-semibold text-sm">
                           ✓ Selected
                         </div>
@@ -351,7 +352,7 @@ const Result = () => {
 
           <button
             onClick={() => navigate(-1)}
-            className="px-10 py-3 rounded-2xl bg-white border border-slate-300 hover:bg-slate-100 font-semibold"
+            className="px-10 py-3 cursor-pointer rounded-2xl bg-white border border-slate-300 hover:bg-slate-100 font-semibold"
           >
             Go Back
           </button>
