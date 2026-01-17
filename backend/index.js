@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Welcome to PMSSS API",
+    message: "Welcome to Title Verifification System",
     status: "Server is running",
     environment: process.env.NODE_ENV || "development",
   });
