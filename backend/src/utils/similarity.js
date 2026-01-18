@@ -1,7 +1,3 @@
-import { metaphone } from "metaphone";
-import { soundex } from "soundex-code";
-import stringSimilarity from "string-similarity";
-import {token_set_ratio, token_sort_ratio} from "fuzzball";
 
 const disallowedPrefixes = ["official", "national", "central", "ministry of", "department of", "prime minister", "president", "certified", "authorized"];
 const disallowedSuffixes = ["gov", "govt", "india", "bharat", "authority", "board", "commission", "scheme", "yojana", "portal" ];
@@ -37,32 +33,10 @@ function containsPeriodicity(title) {
   return periodicities.some((period) => title.toLowerCase().includes(period));
 }
 
-function getPhoneticCodes(title) {
-  return {
-    soundex: soundex(title),
-    metaphone: metaphone(title),
-  };
-}
-
-function stringSimilarityScore(inputTitle, existingTitle) {
-  return stringSimilarity.compareTwoStrings(inputTitle, existingTitle);
-}
-
-function fuzzyMatch(inputTitle, existingTitle) {
-  return Math.max(token_set_ratio(inputTitle, existingTitle), token_sort_ratio(inputTitle, existingTitle))
-}
-
 export {
   normalizeTitle,
   hasDisallowedPrefix,
   hasDisallowedSuffix,
   containsDisallowedWord,
   containsPeriodicity,
-  getPhoneticCodes,
-  stringSimilarityScore,
-  fuzzyMatch,
-  disallowedPrefixes,
-  disallowedSuffixes,
-  disallowedWords,
-  periodicities,
 };

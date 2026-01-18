@@ -8,13 +8,14 @@ import { apiUrl } from "../constants/apiURL";
 import { useAuth } from "../context/AuthContext";
 
 const VerifyTitle = () => {
+  const { state: locationState } = useLocation();
   const {user} = useAuth()
   const [loading, setLoading] = useState(false);
-  const [title, setTitle] = useState("");
-  const [hindiTitle, setHindiTitle] = useState("");
-  const [publicationName, setPublicationName] = useState("");
-  const [periodity, setPeriodity] = useState("");
-  const [state, setState] = useState("");
+  const [title, setTitle] = useState(locationState?.prefillData?.suggestedTitle || "");
+  const [hindiTitle, setHindiTitle] = useState(locationState?.prefillData?.hindiTitle || "");
+  const [publicationName, setPublicationName] = useState(locationState?.prefillData?.publicationName || "");
+  const [periodity, setPeriodity] = useState(locationState?.prefillData?.periodity || "");
+  const [state, setState] = useState(locationState?.prefillData?.state || "");
   const [formData, setFormData] = useState({
     titleCode: "",
     titleName: "",
@@ -26,7 +27,6 @@ const VerifyTitle = () => {
   });
 
   const navigate = useNavigate();
-  const { state: locationState } = useLocation();
 
   const prefilledTitle = locationState?.prefillData?.suggestedTitle || "";
   const prefilledHindiTitle = locationState?.prefillData?.hindiTitle || "";
@@ -37,8 +37,8 @@ const VerifyTitle = () => {
 
   const generateTitleCode = () => {
     const year = new Date().getFullYear();
-    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
-    return `TIQ-${year}-${random}`;
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `TIQ${year}${random}`;
   };
 
   useEffect(() => {

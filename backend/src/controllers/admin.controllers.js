@@ -58,8 +58,6 @@ const getRejectionInsights = async (req, res) => {
       { verified: false },
       {
         similarity: 1,
-        soundex: 1,
-        metaphone: 1,
         verificationProbability: 1,
       }
     );
@@ -69,10 +67,11 @@ const getRejectionInsights = async (req, res) => {
     if (total === 0) {
       return res.status(200).json({
         success: true,
+        totalRejected: 0,
         insights: {
           semantic: 0,
           rule: 0,
-          phonetic: 0,
+          ambiguous: 0,
           other: 0,
         },
       });
@@ -80,16 +79,19 @@ const getRejectionInsights = async (req, res) => {
 
     let semantic = 0;
     let rule = 0;
-    let phonetic = 0;
+    let ambiguous = 0;
     let other = 0;
 
     rejectedTitles.forEach((doc) => {
-      if (doc.verificationProbability < 30) {
-        rule++;
-      } else if (doc.similarity >= 70) {
+      const similarity = doc.similarity ?? 0;
+      const probability = doc.verificationProbability ?? 100;
+
+      if (similarity >= 70) {
         semantic++;
-      } else if (doc.soundex || doc.metaphone) {
-        phonetic++;
+      } else if (probability < 30) {
+        rule++;
+      } else if (similarity >= 40 && similarity < 70) {
+        ambiguous++;
       } else {
         other++;
       }
@@ -100,13 +102,13 @@ const getRejectionInsights = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      totalRejected: total,
       insights: {
         semantic: percent(semantic),
         rule: percent(rule),
-        phonetic: percent(phonetic),
+        phonetic: percent(ambiguous),
         other: percent(other),
       },
-      totalRejected: total,
     });
   } catch (error) {
     console.error("Rejection insights error:", error);

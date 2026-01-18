@@ -6,7 +6,6 @@ import {
   hasDisallowedSuffix,
   containsDisallowedWord,
   containsPeriodicity,
-  getPhoneticCodes,
 } from "../utils/similarity.js";
 
 import { OpenAIEmbeddings } from "@langchain/openai";
@@ -53,9 +52,6 @@ const addTitle = async (req, res) => {
     if (containsPeriodicity(normalized))
       return res.status(400).json({ message: "Contains disallowed periodicity" });
   
-    // Preprocessing
-    const { soundex, metaphone } = getPhoneticCodes(normalized);
-  
     // Save minimal title (NO similarity here)
     const newTitle = await Title.create({
       titleCode,
@@ -66,8 +62,6 @@ const addTitle = async (req, res) => {
       periodity,
       publicationName,
       normalized,
-      soundex,
-      metaphone,
       createdBy: req.user.id,
       embedded: false
     });
@@ -75,7 +69,6 @@ const addTitle = async (req, res) => {
     console.log("New Title Created: ", newTitle);
   
     // AI generated response setup
-    
     const embeddings = new OpenAIEmbeddings({
       model: "text-embedding-3-large"
     });
@@ -92,15 +85,12 @@ const addTitle = async (req, res) => {
 
     const relevantChunk = await vectorSearcher.invoke(newTitle.normalized);
 
-    console.log("Similar Titles: ", relevantChunk)
-
     const fetchedSimilarTitles = relevantChunk.map((doc) => ({
       normalized: doc.pageContent,
       verified: doc.metadata.verified,
-      soundex: doc.metadata.soundex,
-      metaphone: doc.metadata.metaphone,
     }));
     
+    console.log("Titles given to LLM: \n",fetchedSimilarTitles)
 
     const SYSTEM_PROMPT = `You are an automated Title Verification Agent for the Press Registrar General of India (PRGI).
 
@@ -113,26 +103,24 @@ const addTitle = async (req, res) => {
     You will receive structured input containing:
     - title_to_verify (string)
     
-
     You MUST use ONLY this provided data.
     You MUST NOT ask the user for additional information.
 
-
     1. Similarity Evaluation (PRIMARY)
-    - Similarity scores range from 1 to 10:
+    - You have to five Similarity scores range from 1 to 10:
       1–3  = Low similarity (distinct)
       4–5  = Moderate similarity
       6–10 = High similarity (confusing / duplicate)
 
     - Similarity must consider:
-      a) Phonetic similarity (Soundex / Metaphone)
+      a) Phonetic similarity
       b) Semantic similarity (meaning, intent, naming confusion)
 
     2. Decision Rules (NON-NEGOTIABLE)
 
-    - If ANY similar title has similarity score ≥ 6:
+    - If ANY similar title has similarity score > 4:
       → verified MUST be false
-      → AcceptabilityScore MUST be ≤ 4
+      → AcceptabilityScore MUST be < 4
 
     - If ALL similarity scores ≤ 4:
       → The title MUST be considered distinct
@@ -154,17 +142,13 @@ const addTitle = async (req, res) => {
     - The title is a translated or synonymous version of an existing title
     - The title violates naming guidelines implied by similarity data
 
-    ────────────────────────────────
-    OUTPUT RULES (STRICT ENFORCEMENT)
-    ────────────────────────────────
+    5. OUTPUT RULES (STRICT ENFORCEMENT)
     - Output MUST be valid JSON only
     - No extra text, no markdown
     - No explanations outside JSON
     - All numeric fields MUST follow the rules above
 
-    ────────────────────────────────
-    OUTPUT FORMAT (EXACT)
-    ────────────────────────────────
+    6. OUTPUT FORMAT (EXACT)
     {
       "verified": true | false,
       "reason": "Explain your decision briefly based on similarity findings.",
@@ -203,23 +187,20 @@ const addTitle = async (req, res) => {
 
     const newDocument = [
       new Document({
-        pageContent: newTitle.normalized.toString(),
-        
+        pageContent: newTitle.normalized,
         metadata: {
           id: newTitle._id.toString(),
-          verified: newTitle.verified.toString(),
-          titleCode: newTitle.titleCode.toString(),
-          titleName: newTitle.titleName.toString(),
-          soundex: newTitle.soundex.toString(),
-          metaphone: newTitle.metaphone.toString(),
-          verificationProbability: newTitle.verificationProbability.toString(),
-          similarity: newTitle.similarity.toString()
+          verified: newTitle.verified,
+          titleCode: newTitle.titleCode,
+          titleName: newTitle.titleName,
+          verificationProbability: newTitle.verificationProbability,
+          similarity: newTitle.similarity
         },
         id: new UUID().toString(),
       })
     ]
 
-    console.log(newDocument)
+    console.log("New Document for embedd: \n",newDocument)
 
     if(newTitle.verified){
       await vectorStore.addDocuments(newDocument);
@@ -233,7 +214,7 @@ const addTitle = async (req, res) => {
       title: {
         id: newTitle._id,
         titleCode: newTitle.titleCode,
-        message: newTitle.aiVerifyReason,
+        message: newTitle.message,
         titleName: newTitle.titleName,
         hindiTitle: newTitle.hindiTitle,
         ownerName: newTitle.ownerName,

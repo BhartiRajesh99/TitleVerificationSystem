@@ -41,16 +41,6 @@ const TitleSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    soundex: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    metaphone: {
-      type: String,
-      required: true,
-      index: true,
-    },
     similarity: {
       type: Number,
       index: true,
