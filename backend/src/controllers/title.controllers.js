@@ -95,13 +95,10 @@ const addTitle = async (req, res) => {
     console.log("Similar Titles: ", relevantChunk)
 
     const fetchedSimilarTitles = relevantChunk.map((doc) => ({
-      id: doc.metadata.id,
       normalized: doc.pageContent,
-      titleName: doc.metadata.titleName,
       verified: doc.metadata.verified,
       soundex: doc.metadata.soundex,
       metaphone: doc.metadata.metaphone,
-      point_id: doc.id
     }));
     
 
@@ -186,7 +183,7 @@ const addTitle = async (req, res) => {
     `
 
     const response = await client.chat.completions.create({
-      model: 'gpt-4.1',
+      model: 'gpt-4.1-mini',
       messages: [
         {role: 'system', content: SYSTEM_PROMPT},
         {role: 'user', content: `Verify the title: "${newTitle.normalized}" strictly based on the provided context.`}

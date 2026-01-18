@@ -1,9 +1,9 @@
 import { metaphone } from "metaphone";
 import { soundex } from "soundex-code";
 import stringSimilarity from "string-similarity";
-import fuzzy from "fuzzy";
+import {token_set_ratio, token_sort_ratio} from "fuzzball";
 
-const disallowedPrefixes = ["official", "government", "national", "central", "ministry of", "department of", "prime minister", "president", "certified", "authorized"];
+const disallowedPrefixes = ["official", "national", "central", "ministry of", "department of", "prime minister", "president", "certified", "authorized"];
 const disallowedSuffixes = ["gov", "govt", "india", "bharat", "authority", "board", "commission", "scheme", "yojana", "portal" ];
 const disallowedWords = ["criminal", "terrorist", "traitor", "fraudster", "scammer", "corrupt", "rapist", "molester", "anti-national", "extremist"];
 const periodicities = ["daily", "weekly", "monthly", "fortnightly", "evening", "morning"];
@@ -44,15 +44,12 @@ function getPhoneticCodes(title) {
   };
 }
 
-function similarityScore(titleA, titleB) {
-  // Use string-similarity for similarity
-  return stringSimilarity.compareTwoStrings(titleA, titleB);
+function stringSimilarityScore(inputTitle, existingTitle) {
+  return stringSimilarity.compareTwoStrings(inputTitle, existingTitle);
 }
 
-function fuzzyMatch(query, choices) {
-  // Returns the best fuzzy match from choices for the query
-  const results = fuzzy.filter(query, choices);
-  return results.length > 0 ? results[0].string : null;
+function fuzzyMatch(inputTitle, existingTitle) {
+  return Math.max(token_set_ratio(inputTitle, existingTitle), token_sort_ratio(inputTitle, existingTitle))
 }
 
 export {
@@ -62,7 +59,7 @@ export {
   containsDisallowedWord,
   containsPeriodicity,
   getPhoneticCodes,
-  similarityScore,
+  stringSimilarityScore,
   fuzzyMatch,
   disallowedPrefixes,
   disallowedSuffixes,
