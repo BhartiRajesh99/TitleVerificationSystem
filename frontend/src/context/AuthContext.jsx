@@ -75,7 +75,6 @@ export const AuthProvider = ({ children }) => {
       await axios.post(`${apiUrl}/auth/logout`, {}, { withCredentials: true });
       toast.success("Logout Successful");
       setUser(null);
-      navigate("/")
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
