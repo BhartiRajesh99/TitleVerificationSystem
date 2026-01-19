@@ -71,6 +71,12 @@ const Result = () => {
   const {data: result} = state || {};
   const isAccepted = result.verified;
 
+  const canModify = useMemo(() => {
+    if (!user || !result) return false;
+    return !isAccepted && user._id === result.createdBy;
+  }, [user, result, isAccepted]);
+
+
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-10">
@@ -309,7 +315,7 @@ const Result = () => {
 
         {/* Actions */}
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-          {!isAccepted && user._id === result.createdBy && (
+          {canModify && (
             <button
               disabled={!selectedSuggestion}
               onClick={() =>
