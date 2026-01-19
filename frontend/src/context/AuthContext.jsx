@@ -8,6 +8,7 @@ import {
 import axios from "../api/axios.js";
 import toast from "react-hot-toast";
 import { apiUrl } from "../constants/apiURL.js";
+import { useNavigate } from "react-router";
 
 const AuthContext = createContext();
 
@@ -16,6 +17,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
 
   // Check auth on app load
   const checkAuth = useCallback(async () => {
@@ -72,6 +74,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await axios.post(`${apiUrl}/auth/logout`, {}, { withCredentials: true });
       toast.success("Logout Successful");
+      navigate("/")
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
