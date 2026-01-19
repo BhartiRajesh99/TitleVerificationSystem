@@ -31,6 +31,11 @@ const Navbar = () => {
     fetchRequestCount();
   }, [role, setPendingCount]);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated]);
 
   if (loading) return <NavbarSkeleton />;
 
