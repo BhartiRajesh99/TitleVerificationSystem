@@ -112,11 +112,13 @@ const Navbar = () => {
               <NavItem to={role === "admin" ? "/admin" : "/contact"}>
                 {role === "admin" ? "Admin Dashboard" : "Contact Admin"}
               </NavItem>
-
+              
+              {/* nav-items seprator */}
+              <div className="h-12 border border-slate-500 rounded-full"></div>
               {/* User */}
-              <span className="px-3 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 font-semibold">
-                {name || "USER"}
-              </span>
+                <div className="flex items-center justify-center p-2 shadow text-xs rounded-lg bg-neutral-800 text-white font-semibold">
+                  <span>{name || "USER"}</span>
+                </div>
             </>
           )}
 
@@ -125,20 +127,19 @@ const Navbar = () => {
             <button
               onClick={logout}
               className="
-              flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold
+              flex items-center gap-2 p-3 rounded-full shadow-lg text-xs font-semibold
               bg-rose-600 text-white
               hover:bg-rose-700 transition cursor-pointer
             "
             >
               <LogOut size={14} />
-              Logout
             </button>
           ) : (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate("/login")}
                 className="
-                flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold
+                flex items-center gap-2 px-4 py-2 rounded-lg text-shadow-sm shadow-xl text-xs font-semibold
                 bg-indigo-600 text-white
                 hover:bg-indigo-700 transition cursor-pointer
               "
@@ -150,7 +151,7 @@ const Navbar = () => {
               <button
                 onClick={() => navigate("/signup")}
                 className="
-                px-4 py-1.5 rounded-full text-xs font-semibold
+                px-4 py-2 rounded-lg shadow-md text-xs font-semibold
                 border border-indigo-600 text-indigo-600
                 hover:bg-indigo-50 transition cursor-pointer
               "
@@ -225,13 +226,13 @@ const Navbar = () => {
                 Logout
               </button>
             ) : (
-              <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full">
+              <div className="flex flex-col [@media(min-width:450px)]:flex-row gap-3 mt-2 w-full">
                 <button
                   onClick={() => {
                     setOpen(false);
                     navigate("/login");
                   }}
-                  className="px-4 py-2 w-full rounded-xl bg-indigo-600 text-white text-sm font-semibold"
+                  className="px-4 py-2 w-full rounded-lg bg-indigo-600 text-white text-sm font-semibold"
                 >
                   Login
                 </button>
@@ -241,7 +242,7 @@ const Navbar = () => {
                     setOpen(false);
                     navigate("/signup");
                   }}
-                  className="px-4 py-2 w-full rounded-xl border border-indigo-600 text-indigo-600 text-sm font-semibold"
+                  className="px-4 py-2 w-full rounded-lg border border-indigo-600 text-indigo-600 text-sm font-semibold"
                 >
                   Sign Up
                 </button>
@@ -261,7 +262,7 @@ const NavItem = ({ to, children, onClick }) => (
     className={({ isActive }) =>
       `relative transition p-2 rounded-lg ${
         isActive
-          ? "text-indigo-600 font-semibold bg-indigo-50"
+          ? "text-indigo-600 font-semibold bg-indigo-50 shadow-sm"
           : "text-slate-600 hover:text-indigo-600"
       }`
     }
