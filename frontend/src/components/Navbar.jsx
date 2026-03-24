@@ -112,13 +112,13 @@ const Navbar = () => {
               <NavItem to={role === "admin" ? "/admin" : "/contact"}>
                 {role === "admin" ? "Admin Dashboard" : "Contact Admin"}
               </NavItem>
-              
+
               {/* nav-items seprator */}
               <div className="h-12 border border-slate-500 rounded-full"></div>
               {/* User */}
-                <div className="flex items-center justify-center p-2 shadow text-xs rounded-lg bg-neutral-800 text-white font-semibold">
-                  <span>{name || "USER"}</span>
-                </div>
+              <div className="flex items-center justify-center p-2 shadow text-xs rounded-lg bg-neutral-800 text-white font-semibold">
+                <span>{name || "USER"}</span>
+              </div>
             </>
           )}
 
@@ -267,7 +267,7 @@ const NavItem = ({ to, children, onClick }) => (
       }`
     }
   >
-    {children}   
+    {children}
   </NavLink>
 );
 

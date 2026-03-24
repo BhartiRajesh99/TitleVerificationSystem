@@ -3,6 +3,7 @@ import Loader from "../components/Loader";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import {useAuth} from "../context/AuthContext"
 import { useState } from "react";
+import { useMemo } from "react";
 
 const Result = () => {
 
