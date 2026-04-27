@@ -228,7 +228,7 @@ const getRecentSubmissions = async (req, res) => {
   try {
     const submissions = await Title.aggregate([
       { $sort: { createdAt: -1 } },
-      { $limit: 10 },
+      { $limit: 6 },
       {
         $lookup: {
           from: "users",        
