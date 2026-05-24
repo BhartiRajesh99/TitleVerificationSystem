@@ -76,7 +76,7 @@ const addTitle = async (req, res) => {
     // AI similarity search
     const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
       url: process.env.QDRANT_URL,
-      collectionName: "ai-title-verify",
+      collectionName: "titles",
     });
   
     const vectorSearcher = vectorStore.asRetriever({
