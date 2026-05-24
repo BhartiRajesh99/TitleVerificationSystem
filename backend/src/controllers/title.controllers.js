@@ -70,7 +70,7 @@ const addTitle = async (req, res) => {
   
     // AI generated response setup
     const embeddings = new OpenAIEmbeddings({
-      model: "text-embedding-3-large"
+      model: "text-embedding-3-small"
     });
     
     // AI similarity search
@@ -78,18 +78,18 @@ const addTitle = async (req, res) => {
       url: process.env.QDRANT_URL,
       collectionName: "titles",
     });
-  
+  console.log("1")
     const vectorSearcher = vectorStore.asRetriever({
       k: 10,
     })
-
+console.log("2")
     const relevantChunk = await vectorSearcher.invoke(newTitle.normalized);
-
+console.log("3")
     const fetchedSimilarTitles = relevantChunk.map((doc) => ({
       normalized: doc.pageContent,
       verified: doc.metadata.verified,
     }));
-    
+    console.log("4")
     console.log("Titles given to LLM: \n",fetchedSimilarTitles)
 
     const SYSTEM_PROMPT = `You are an automated Title Verification Agent for the Press Registrar General of India (PRGI).
