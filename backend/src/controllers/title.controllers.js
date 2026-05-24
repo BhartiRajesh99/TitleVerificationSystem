@@ -262,7 +262,7 @@ const deleteTitle = async (req, res) => {
     });
     const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
       url: process.env.QDRANT_URL,
-      collectionName: "ai-title-verify",
+      collectionName: "titles",
     });
 
     if(existingTitle.embedded && !existingTitle?.point_id){
